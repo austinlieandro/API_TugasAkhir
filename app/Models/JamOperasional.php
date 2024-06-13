@@ -7,5 +7,16 @@ use Illuminate\Database\Eloquent\Model;
 class JamOperasional extends Model
 {
     public $timestamps = false;
-    protected $table = 'bengkels';
+    protected $table = 'jam_operasional';
+
+    protected $fillable = [
+        'jam_operasional',
+        'slot',
+        'bengkels_id'
+    ];
+
+    protected $casts = [
+        'jam_operasional' => 'json',
+        'slot' => 'json',
+    ];
 }

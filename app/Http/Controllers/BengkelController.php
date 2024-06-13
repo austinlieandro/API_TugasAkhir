@@ -3,14 +3,17 @@
 namespace App\Http\Controllers;
 
 use App\Models\Bengkels;
+use App\Models\JamOperasional;
 use App\Models\Users;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
 class BengkelController extends Controller
 {
-    public function daftarBengkel(request $request){
-        $validator = Validator::make($request->all(),[
+    public function daftarBengkel(request $request)
+    {
+        $validator = Validator::make($request->all(), [
             'nama_bengkel' => 'required',
             'lokasi_bengkel' => 'required',
             'number_bengkel' => 'required',
@@ -46,7 +49,7 @@ class BengkelController extends Controller
         $user->user_bengkel = 'owner';
         $user->save();
 
-        if ($bengkel){
+        if ($bengkel) {
             return response()->json([
                 'status' => true,
                 'message' => 'Berhasil mendaftarkan bengkel',
@@ -54,15 +57,16 @@ class BengkelController extends Controller
             ], 201);
         }
         return response()->json([
-            'status' => true,
+            'status' => false,
             'message' => 'Gagal mendaftarkan bengkel',
         ], 409);
     }
 
-    public function showAllbengkels(){
+    public function showAllbengkels()
+    {
         $bengkels = Bengkels::all();
 
-        if($bengkels){
+        if ($bengkels) {
             return response()->json([
                 'status' => true,
                 'message' => 'Berhasil menampilkan bengkel',
@@ -76,20 +80,35 @@ class BengkelController extends Controller
         ], 209);
     }
 
-    public function detailBengkels($id){
+    public function detailBengkels($id)
+    {
         $bengkel = Bengkels::find($id);
 
-        if(!$bengkel){
+        if (!$bengkel) {
             return response()->json([
                 'status' => false,
                 'message' => 'Bengkel tidak ditemukan',
             ], 404);
         }
 
+        $bengkel->jenis_kendaraan = is_string($bengkel->jenis_kendaraan) ? json_decode($bengkel->jenis_kendaraan) : $bengkel->jenis_kendaraan;
+        $bengkel->jenis_layanan = is_string($bengkel->jenis_layanan) ? json_decode($bengkel->jenis_layanan) : $bengkel->jenis_layanan;
+        $bengkel->hari_operasional = is_string($bengkel->hari_operasional) ? json_decode($bengkel->hari_operasional) : $bengkel->hari_operasional;
+
+        $jamOperasional = JamOperasional::where('bengkels_id', $id)->get();
+
+        if ($jamOperasional) {
+            foreach ($jamOperasional as $jam) {
+                $jam->jam_operasional = is_string($jam->jam_operasional) ? json_decode($jam->jam_operasional) : $jam->jam_operasional;
+                $jam->slot = is_string($jam->slot) ? json_decode($jam->slot) : $jam->slot;
+            }
+        }
+
         return response()->json([
             'status' => true,
             'message' => 'Bengkel ditemukan',
             'bengkel' => $bengkel,
+            'jam_operasional' => $jamOperasional,
         ], 201);
     }
 }

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\BengkelController;
+use App\Http\Controllers\JamOperasionalController;
 use App\Http\Controllers\KaryawanController;
 use App\Http\Controllers\KendaraanController;
 use Illuminate\Http\Request;
@@ -13,6 +14,7 @@ Route::post('/kendaraan', [KendaraanController::class, 'kendaraan']);
 Route::post('/daftarBengkel', [BengkelController::class, 'daftarBengkel']);
 Route::post('/daftarKaryawan', [KaryawanController::class, 'karyawan']);
 Route::post('/kendaraan/{userId}/{id}', [KendaraanController::class, 'updateKendaraan']);
+Route::post('/jamOperasional', [JamOperasionalController::class, 'inputJam']);
 
 Route::get('/bengkel', [BengkelController::class, 'showAllbengkels']);
 Route::get('/bengkel/{id}', [BengkelController::class, 'detailBengkels']);
