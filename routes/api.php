@@ -15,6 +15,7 @@ Route::post('/daftarBengkel', [BengkelController::class, 'daftarBengkel']);
 Route::post('/daftarKaryawan', [KaryawanController::class, 'karyawan']);
 Route::post('/kendaraan/{userId}/{id}', [KendaraanController::class, 'updateKendaraan']);
 Route::post('/jamOperasional', [JamOperasionalController::class, 'inputJam']);
+Route::post('/updateOperasional/{bengkelId}/{id}', [JamOperasionalController::class, 'updateJamOperasional']);
 
 Route::get('/bengkel', [BengkelController::class, 'showAllbengkels']);
 Route::get('/bengkel/{id}', [BengkelController::class, 'detailBengkels']);

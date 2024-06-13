@@ -32,7 +32,7 @@ class KaryawanController extends Controller
         }
 
         return response()->json([
-            'status' => true,
+            'status' => false,
             'message' => 'Gagal mendaftarkan karyawan',
         ], 409);
     }
