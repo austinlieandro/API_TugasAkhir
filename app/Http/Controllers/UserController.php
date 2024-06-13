@@ -1,0 +1,83 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+use App\Models\Users;
+use Illuminate\Support\Facades\Validator;
+use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Hash;
+
+class UserController extends Controller
+{
+    public function register(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            "name" => "required",
+            'email' => "required|email",
+            'username' => "required",
+            'password' => "required",
+            'phone' => "required",
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json($validator->errors(), 422);
+        }
+
+        $existingUser = Users::where('email', $request->email)->orWhere('username', $request->username)->first();
+
+        if ($existingUser) {
+            $message = '';
+            if ($existingUser->email === $request->email) {
+                $message = 'Email sudah digunakan.';
+            }
+            if ($existingUser->username === $request->username) {
+                $message = 'Username sudah digunakan.';
+            }
+            if ($existingUser->username === $request->username && $existingUser->email === $request->email) {
+                $message = 'Email & Username sudah digunakan.';
+            }
+            return response()->json([
+                'status' => false,
+                'message' => $message,
+            ], 400);
+        }
+
+        $user = Users::create([
+            'name' => $request->name,
+            'email' => $request->email,
+            'username' => $request->username,
+            'password' => bcrypt($request->password),
+            'phone' => $request->phone,
+            'user_bengkel' => 'pelanggan',
+        ]);
+
+        if ($user) {
+            return response()->json([
+                'status' => true,
+                'message' => 'Register Berhasil',
+                'user' => $user,
+            ], 201);
+        }
+        return response()->json([
+            'status' => false,
+            'message' => 'Register kamu gagal'
+        ], 409);
+    }
+
+    public function login(Request $request)
+    {
+        $user = Users::where('username', $request->username)->first();
+        if (!$user || !Hash::check($request->password, $user->password)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Invalid email or password'
+            ], 401);
+        }
+        return response()->json([
+            'success' => true,
+            'message' => 'Login Berhasil',
+            'user' => $user,
+        ], 200);
+    }
+}
