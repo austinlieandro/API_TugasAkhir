@@ -51,7 +51,8 @@ class KendaraanController extends Controller
         ], 409);
     }
 
-    public function kendaraanUser($id){
+    public function kendaraanUser($id)
+    {
         $kendaraan = Kendaraan::where('users_id', $id)->get();
 
         if (!$kendaraan) {
@@ -68,7 +69,8 @@ class KendaraanController extends Controller
         ], 201);
     }
 
-    public function updateKendaraan(Request $request, $users_id, $kendaraan_id){
+    public function updateKendaraan(Request $request, $users_id, $kendaraan_id)
+    {
         $validator = Validator::make($request->all(), [
             'plat_kendaraan' => 'required'
         ]);
@@ -78,7 +80,7 @@ class KendaraanController extends Controller
         }
 
         $kendaraan = Kendaraan::where('id', $kendaraan_id)->where('users_id', $users_id)->first();
-        if(!$kendaraan){
+        if (!$kendaraan) {
             return response()->json([
                 'status' => false,
                 'message' => 'Data kendaraan tidak ditemukan',
@@ -93,5 +95,35 @@ class KendaraanController extends Controller
             'message' => 'Plat kendaraan berhasil diperbarui',
             'kendaraan' => $kendaraan,
         ], 200);
+    }
+
+    public  function deleteKendaraan(request $request, $users_id, $kendaraan_id)
+    {
+        $validator = Validator::make($request->all(), []);
+
+        if ($validator->fails()) {
+            return response()->json($validator->errors(), 422);
+        }
+
+        $kendaraan = Kendaraan::where('id', $kendaraan_id)->where('users_id', $users_id)->first();
+
+        if (!$kendaraan) {
+            return response()->json([
+                'status' => false,
+                'message' => 'kendaraan tidak ditemukan',
+            ], 404);
+        }
+
+        if ($kendaraan->delete()) {
+            return response()->json([
+                'status' => true,
+                'message' => 'Berhasil menghapus data kendaraan',
+            ], 200);
+        } else {
+            return response()->json([
+                'status' => false,
+                'message' => 'Gagal menghapus data kendaraan',
+            ], 500);
+        }
     }
 }

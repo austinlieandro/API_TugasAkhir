@@ -19,6 +19,7 @@ Route::post('/updateOperasional/{bengkelId}/{id}', [JamOperasionalController::cl
 Route::post('/updateKaryawan/{bengkelId}/{id}', [KaryawanController::class, 'updateKaryawan']);
 Route::post('/deleteKaryawan/{bengkelId}/{id}', [KaryawanController::class, 'deleteKaryawan']);
 Route::post('/updateProfile/{id}', [UserController::class, 'updateProfile']);
+Route::post('/deleteKendaraan/{userId}/{id}', [KendaraanController::class, 'deleteKendaraan']);
 
 Route::get('/bengkel', [BengkelController::class, 'showAllbengkels']);
 Route::get('/bengkel/{id}', [BengkelController::class, 'detailBengkels']);
