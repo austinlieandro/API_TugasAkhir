@@ -80,4 +80,69 @@ class UserController extends Controller
             'user' => $user,
         ], 200);
     }
+
+    public function updateProfile(Request $request, $users_id)
+    {
+        $validator = Validator::make($request->all(), [
+            "name" => "required",
+            'email' => "required|email",
+            'username' => "required",
+            'phone' => "required",
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json($validator->errors(), 422);
+        }
+
+        $user = Users::find($users_id);
+
+        if (!$user) {
+            return response()->json([
+                'status' => false,
+                'message' => 'User not found'
+            ], 404);
+        }
+
+        $existingUser = Users::where('id', '!=', $users_id)
+            ->where(function ($query) use ($request) {
+                $query->where('email', $request->email)
+                    ->orWhere('username', $request->username);
+            })
+            ->first();
+
+        if ($existingUser) {
+            $message = '';
+            if ($existingUser->email === $request->email) {
+                $message = 'Email sudah digunakan.';
+            }
+            if ($existingUser->username === $request->username) {
+                $message = 'Username sudah digunakan.';
+            }
+            if ($existingUser->username === $request->username && $existingUser->email === $request->email) {
+                $message = 'Email & Username sudah digunakan.';
+            }
+            return response()->json([
+                'status' => false,
+                'message' => $message,
+            ], 400);
+        }
+
+        $user->name = $request->name;
+        $user->email = $request->email;
+        $user->username = $request->username;
+        $user->phone = $request->phone;
+
+        if ($user->save()) {
+            return response()->json([
+                'status' => true,
+                'message' => 'Profile updated successfully',
+                'user' => $user,
+            ], 200);
+        }
+
+        return response()->json([
+            'status' => false,
+            'message' => 'Failed to update profile'
+        ], 500);
+    }
 }
