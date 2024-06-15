@@ -20,6 +20,7 @@ Route::post('/updateKaryawan/{bengkelId}/{id}', [KaryawanController::class, 'upd
 Route::post('/deleteKaryawan/{bengkelId}/{id}', [KaryawanController::class, 'deleteKaryawan']);
 Route::post('/updateProfile/{id}', [UserController::class, 'updateProfile']);
 Route::post('/deleteKendaraan/{userId}/{id}', [KendaraanController::class, 'deleteKendaraan']);
+Route::post('/updateBengkel/{bengkelId}/{id}', [BengkelController::class, 'editBengkel']);
 
 Route::get('/bengkel', [BengkelController::class, 'showAllbengkels']);
 Route::get('/bengkel/{id}', [BengkelController::class, 'detailBengkels']);

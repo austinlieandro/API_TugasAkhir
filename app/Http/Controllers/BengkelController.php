@@ -97,18 +97,65 @@ class BengkelController extends Controller
 
         $jamOperasional = JamOperasional::where('bengkels_id', $id)->get();
 
-        if ($jamOperasional) {
-            foreach ($jamOperasional as $jam) {
-                $jam->jam_operasional = is_string($jam->jam_operasional) ? json_decode($jam->jam_operasional) : $jam->jam_operasional;
-                $jam->slot = is_string($jam->slot) ? json_decode($jam->slot) : $jam->slot;
-            }
-        }
-
         return response()->json([
             'status' => true,
             'message' => 'Bengkel ditemukan',
             'bengkel' => $bengkel,
             'jam_operasional' => $jamOperasional,
         ], 201);
+    }
+
+    public function editBengkel(Request $request, $users_id, $id)
+    {
+        $validator = Validator::make($request->all(), [
+            'nama_bengkel' => 'required',
+            'lokasi_bengkel' => 'required',
+            'number_bengkel' => 'required',
+            'alamat_bengkel' => 'required',
+            'gmaps_bengkel' => 'required',
+            'jenis_kendaraan' => 'required|array',
+            'jenis_layanan' => 'required|array',
+            'hari_operasional' => 'required|array',
+            'jam_buka' => 'required',
+            'jam_tutup' => 'required',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json($validator->errors(), 422);
+        }
+
+        $bengkel = Bengkels::find($id);
+
+        if (!$bengkel) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Bengkel tidak ditemukan',
+            ], 404);
+        }
+
+        $bengkel->nama_bengkel = $request->nama_bengkel;
+        $bengkel->lokasi_bengkel = $request->lokasi_bengkel;
+        $bengkel->number_bengkel = $request->number_bengkel;
+        $bengkel->alamat_bengkel = $request->alamat_bengkel;
+        $bengkel->gmaps_bengkel = $request->gmaps_bengkel;
+        $bengkel->jenis_kendaraan = $request->jenis_kendaraan;
+        $bengkel->jenis_layanan = $request->jenis_layanan;
+        $bengkel->hari_operasional = $request->hari_operasional;
+        $bengkel->jam_buka = $request->jam_buka;
+        $bengkel->jam_tutup = $request->jam_tutup;
+        $bengkel->users_id = (int)$users_id;
+
+        if ($bengkel->save()) {
+            return response()->json([
+                'status' => true,
+                'message' => 'Berhasil mengedit bengkel',
+                'bengkel' => $bengkel,
+            ], 200);
+        }
+
+        return response()->json([
+            'status' => false,
+            'message' => 'Gagal mengedit bengkel',
+        ], 500);
     }
 }
