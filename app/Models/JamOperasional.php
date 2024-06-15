@@ -11,12 +11,8 @@ class JamOperasional extends Model
 
     protected $fillable = [
         'jam_operasional',
+        'hari_operasional',
         'slot',
-        'bengkels_id'
-    ];
-
-    protected $casts = [
-        'jam_operasional' => 'json',
-        'slot' => 'json',
+        'bengkels_id',
     ];
 }
