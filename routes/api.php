@@ -4,6 +4,7 @@ use App\Http\Controllers\BengkelController;
 use App\Http\Controllers\JamOperasionalController;
 use App\Http\Controllers\KaryawanController;
 use App\Http\Controllers\KendaraanController;
+use App\Http\Controllers\ReservasiController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
@@ -21,6 +22,7 @@ Route::post('/deleteKaryawan/{bengkelId}/{id}', [KaryawanController::class, 'del
 Route::post('/updateProfile/{id}', [UserController::class, 'updateProfile']);
 Route::post('/deleteKendaraan/{userId}/{id}', [KendaraanController::class, 'deleteKendaraan']);
 Route::post('/updateBengkel/{bengkelId}/{id}', [BengkelController::class, 'editBengkel']);
+Route::post('/userReservasi', [ReservasiController::class, 'userReservasi']);
 
 Route::get('/bengkel', [BengkelController::class, 'showAllbengkels']);
 Route::get('/bengkel/{id}', [BengkelController::class, 'detailBengkels']);
