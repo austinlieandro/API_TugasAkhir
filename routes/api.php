@@ -23,8 +23,10 @@ Route::post('/updateProfile/{id}', [UserController::class, 'updateProfile']);
 Route::post('/deleteKendaraan/{userId}/{id}', [KendaraanController::class, 'deleteKendaraan']);
 Route::post('/updateBengkel/{bengkelId}/{id}', [BengkelController::class, 'editBengkel']);
 Route::post('/userReservasi', [ReservasiController::class, 'userReservasi']);
+Route::post('/assignKaryawan', [ReservasiController::class, 'assignKaryawan']);
 
 Route::get('/bengkel', [BengkelController::class, 'showAllbengkels']);
 Route::get('/bengkel/{id}', [BengkelController::class, 'detailBengkels']);
 Route::get('/kendaraan/{id}', [KendaraanController::class, 'kendaraanUser']);
 Route::get('/karyawan/{id}', [KaryawanController::class, 'daftarKaryawan']);
+Route::get('/showReservasi/{id}', [ReservasiController::class, 'displayReservasiUser']);

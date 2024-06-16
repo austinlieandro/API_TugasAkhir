@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\JamOperasional;
 use App\Models\Reservasi;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
 class ReservasiController extends Controller
@@ -79,5 +80,73 @@ class ReservasiController extends Controller
                 'message' => 'Waktu reservasi tidak tersedia',
             ], 409);
         }
+    }
+
+    public function assignKaryawan(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'id' => 'required|integer',
+            'karyawan_id' => 'nullable|integer',
+            'status_reservasi' => 'nullable|string',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json($validator->errors(), 422);
+        }
+
+        $reservasi = Reservasi::find($request->id);
+
+        if (!$reservasi) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Reservasi tidak ditemukan',
+            ], 404);
+        }
+
+        if ($request->has('karyawan_id')) {
+            $reservasi->karyawan_id = (int)$request->karyawan_id;
+        }
+
+        if ($request->has('status_reservasi')) {
+            $reservasi->status_reservasi = $request->status_reservasi;
+        }
+
+        $reservasi->save();
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Karyawan berhasil diassign dan status reservasi diubah',
+            'reservasi' => $reservasi,
+        ], 200);
+    }
+
+    public function displayReservasiUser($users_id)
+    {
+        $reservasi = DB::table('reservasi')
+            ->join('bengkels', 'reservasi.bengkels_id', '=', 'bengkels.id')
+            ->leftJoin('karyawan', 'reservasi.karyawan_id', '=', 'karyawan.id')
+            ->where('reservasi.users_id', $users_id)
+            ->select(
+                'reservasi.*',
+                'bengkels.nama_bengkel',
+                'bengkels.lokasi_bengkel',
+                'bengkels.number_bengkel',
+                'bengkels.alamat_bengkel',
+                'karyawan.nama_karyawan'
+            )
+            ->get();
+
+        if ($reservasi->isEmpty()) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Tidak ada reservasi untuk user ini',
+            ], 404);
+        }
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Berhasil menampilkan reservasi untuk user ini',
+            'reservasi' => $reservasi,
+        ], 200);
     }
 }
