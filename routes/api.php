@@ -29,4 +29,5 @@ Route::get('/bengkel', [BengkelController::class, 'showAllbengkels']);
 Route::get('/bengkel/{id}', [BengkelController::class, 'detailBengkels']);
 Route::get('/kendaraan/{id}', [KendaraanController::class, 'kendaraanUser']);
 Route::get('/karyawan/{id}', [KaryawanController::class, 'daftarKaryawan']);
-Route::get('/showReservasi/{id}', [ReservasiController::class, 'displayReservasiUser']);
+Route::get('/showReservasiUser/{id}', [ReservasiController::class, 'displayReservasiUser']);
+Route::get('/showReservasiBengkel/{id}', [ReservasiController::class, 'displayReservasiBengkel']);

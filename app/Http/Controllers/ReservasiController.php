@@ -149,4 +149,36 @@ class ReservasiController extends Controller
             'reservasi' => $reservasi,
         ], 200);
     }
+
+    public function displayReservasiBengkel($bengkels_id)
+    {
+        $reservasi = DB::table('reservasi')
+            ->join('users', 'reservasi.users_id', '=', 'users.id')
+            ->join('bengkels', 'reservasi.bengkels_id', '=', 'bengkels.id')
+            ->leftJoin('karyawan', 'reservasi.karyawan_id', '=', 'karyawan.id')
+            ->where('reservasi.bengkels_id', $bengkels_id)
+            ->select(
+                'reservasi.*',
+                'users.name as user_name',
+                'bengkels.nama_bengkel',
+                'bengkels.lokasi_bengkel',
+                'bengkels.number_bengkel',
+                'bengkels.alamat_bengkel',
+                'karyawan.nama_karyawan'
+            )
+            ->get();
+
+        if ($reservasi->isEmpty()) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Tidak ada reservasi untuk bengkel ini',
+            ], 404);
+        }
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Berhasil menampilkan reservasi untuk bengkel ini',
+            'reservasi' => $reservasi,
+        ], 200);
+    }
 }
