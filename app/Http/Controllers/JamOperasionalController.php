@@ -2,43 +2,54 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Bengkels;
 use App\Models\JamOperasional;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
 class JamOperasionalController extends Controller
 {
-    public function inputJam(request $request)
+    public function inputJam(Request $request)
     {
         $validator = Validator::make($request->all(), [
             'jam_operasional' => 'required|array',
             'hari_operasional' => 'required|array',
             'slot' => 'required|array',
-            'bengkels_id' => 'required',
+            'bengkels_id' => 'required|exists:bengkels,id',
         ]);
 
         if ($validator->fails()) {
             return response()->json($validator->errors(), 422);
         }
 
-        $jamOperasional = JamOperasional::create([
-            'jam_operasional' => $request->jam_operasional,
-            'hari_operasional' => $request->hari_operasional,
-            'slot' => $request->slot,
-            'bengkels_id' => (int)$request->bengkels_id,
-        ]);
+        $jam_operasional = $request->jam_operasional;
+        $hari_operasional = $request->hari_operasional;
+        $slot = $request->slot;
+        $bengkels_id = (int)$request->bengkels_id;
+
+        $jamOperasionalData = [];
+        foreach ($jam_operasional as $index => $jam) {
+            $jamOperasionalData[] = [
+                'jam_operasional' => $jam,
+                'hari_operasional' => $hari_operasional[$index],
+                'slot' => $slot[$index],
+                'bengkels_id' => $bengkels_id,
+            ];
+        }
+
+        $jamOperasional = JamOperasional::insert($jamOperasionalData);
 
         if ($jamOperasional) {
             return response()->json([
                 'status' => true,
                 'message' => 'Berhasil menambahkan jam operasional',
-                'jamOperasional' => $jamOperasional,
+                'jamOperasional' => $jamOperasionalData,
             ], 201);
         }
 
         return response()->json([
             'status' => false,
-            'message' => 'gagal menambahkan jam operasional',
+            'message' => 'Gagal menambahkan jam operasional',
         ], 409);
     }
 
