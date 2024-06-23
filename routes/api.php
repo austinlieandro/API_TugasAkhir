@@ -35,3 +35,4 @@ Route::get('/karyawan/{id}', [KaryawanController::class, 'daftarKaryawan']);
 Route::get('/showReservasiUser/{id}', [ReservasiController::class, 'displayReservasiUser']);
 Route::get('/showReservasiBengkel/{id}', [ReservasiController::class, 'displayReservasiBengkel']);
 Route::get('/displayUserFavorit/{id}', [FavoritController::class, 'displayUserFavorit']);
+Route::get('/profile/{id}', [UserController::class, 'profile']);

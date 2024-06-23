@@ -145,4 +145,22 @@ class UserController extends Controller
             'message' => 'Failed to update profile'
         ], 500);
     }
+
+    public function profile($id)
+    {
+        $users = Users::find($id);
+
+        if ($users) {
+            return response()->json([
+                'status' => true,
+                'message' => 'Berhasil menampilkan profile',
+                'users' => $users,
+            ], 201);
+        }
+
+        return response()->json([
+            'status' => false,
+            'message' => 'Gagal menampilkan profile',
+        ], 404);
+    }
 }

@@ -18,7 +18,6 @@ class BengkelController extends Controller
             'lokasi_bengkel' => 'required',
             'number_bengkel' => 'required',
             'alamat_bengkel' => 'required',
-            'gmaps_bengkel' => 'required',
             'jenis_kendaraan' => 'required|array',
             'jenis_layanan' => 'required|array',
             'hari_operasional' => 'required|array',

@@ -17,6 +17,7 @@ class ReservasiController extends Controller
             'jam_reservasi' => 'required',
             'jeniskendala_reservasi' => 'required',
             'detail_reservasi' => 'required',
+            'kendaraan_reservasi' => 'required',
             'bengkels_id' => 'required|integer',
             'users_id' => 'required|integer',
         ]);
@@ -58,6 +59,7 @@ class ReservasiController extends Controller
                 'jam_reservasi' => $jam_reservasi,
                 'jeniskendala_reservasi' => $request->jeniskendala_reservasi,
                 'detail_reservasi' => $request->detail_reservasi,
+                'kendaraan_reservasi' => $request->kendaraan_reservasi,
                 'bengkels_id' => $bengkels_id,
                 'users_id' => (int) $request->users_id,
             ]);
@@ -132,6 +134,7 @@ class ReservasiController extends Controller
                 'bengkels.lokasi_bengkel',
                 'bengkels.number_bengkel',
                 'bengkels.alamat_bengkel',
+                'bengkels.gmaps_bengkel',
                 'karyawan.nama_karyawan'
             )
             ->get();
