@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Users;
 use Illuminate\Support\Facades\Validator;
 use App\Http\Controllers\Controller;
+use App\Models\Bengkels;
 use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
@@ -68,16 +69,22 @@ class UserController extends Controller
     public function login(Request $request)
     {
         $user = Users::where('username', $request->username)->first();
+
         if (!$user || !Hash::check($request->password, $user->password)) {
             return response()->json([
                 'success' => false,
                 'message' => 'Invalid email or password'
             ], 401);
         }
+
+        $bengkel = Bengkels::where('users_id', $user->id)->first();
+        $bengkel_id = $bengkel ? $bengkel->id : 0;
+
         return response()->json([
             'success' => true,
             'message' => 'Login Berhasil',
             'user' => $user,
+            'bengkels_id' => $bengkel_id,
         ], 200);
     }
 
