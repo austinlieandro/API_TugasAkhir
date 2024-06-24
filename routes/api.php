@@ -22,7 +22,7 @@ Route::post('/updateKaryawan/{bengkelId}/{id}', [KaryawanController::class, 'upd
 Route::post('/deleteKaryawan/{bengkelId}/{id}', [KaryawanController::class, 'deleteKaryawan']);
 Route::post('/updateProfile/{id}', [UserController::class, 'updateProfile']);
 Route::post('/deleteKendaraan/{userId}/{id}', [KendaraanController::class, 'deleteKendaraan']);
-Route::post('/updateBengkel/{bengkelId}/{id}', [BengkelController::class, 'editBengkel']);
+Route::post('/updateBengkel/{usersId}/{id}', [BengkelController::class, 'editBengkel']);
 Route::post('/userReservasi', [ReservasiController::class, 'userReservasi']);
 Route::post('/assignKaryawan', [ReservasiController::class, 'assignKaryawan']);
 Route::post('/favoritBengkel', [FavoritController::class, 'favoritBengkel']);
