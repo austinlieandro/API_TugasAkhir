@@ -53,6 +53,7 @@ class BengkelController extends Controller
                 'status' => true,
                 'message' => 'Berhasil mendaftarkan bengkel',
                 'bengkel' => $bengkel,
+                'user' => $user,
             ], 201);
         }
         return response()->json([
