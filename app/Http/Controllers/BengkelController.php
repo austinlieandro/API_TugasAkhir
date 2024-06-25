@@ -80,9 +80,22 @@ class BengkelController extends Controller
         ], 209);
     }
 
-    public function detailBengkels($id)
+    public function detailBengkels($users_id, $bengkels_id)
     {
-        $bengkel = Bengkels::find($id);
+        $validator = Validator::make(
+            ['users_id' => $users_id, 'bengkels_id' => $bengkels_id],
+            ['users_id' => 'required|exists:users,id', 'bengkels_id' => 'required|exists:bengkels,id']
+        );
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Validation error',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $bengkel = Bengkels::find($bengkels_id);
 
         if (!$bengkel) {
             return response()->json([
@@ -95,15 +108,24 @@ class BengkelController extends Controller
         $bengkel->jenis_layanan = is_string($bengkel->jenis_layanan) ? json_decode($bengkel->jenis_layanan) : $bengkel->jenis_layanan;
         $bengkel->hari_operasional = is_string($bengkel->hari_operasional) ? json_decode($bengkel->hari_operasional) : $bengkel->hari_operasional;
 
-        $jamOperasional = JamOperasional::where('bengkels_id', $id)->get();
+        $jamOperasional = JamOperasional::where('bengkels_id', $bengkels_id)->get();
+
+        $favorit = DB::table('favorit')
+        ->where('users_id', $users_id)
+            ->where('bengkels_id', $bengkels_id)
+            ->first();
+
+        $statusFavorit = $favorit ? $favorit->status_favorit : '0';
 
         return response()->json([
             'status' => true,
             'message' => 'Bengkel ditemukan',
             'bengkel' => $bengkel,
             'jam_operasional' => $jamOperasional,
+            'status_favorit' => $statusFavorit,
         ], 201);
     }
+
 
     public function editBengkel(Request $request, $users_id, $id)
     {

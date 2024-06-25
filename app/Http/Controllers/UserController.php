@@ -91,10 +91,11 @@ class UserController extends Controller
     public function updateProfile(Request $request, $users_id)
     {
         $validator = Validator::make($request->all(), [
-            "name" => "required",
-            'email' => "required|email",
-            'username' => "required",
-            'phone' => "required",
+            'name' => 'required',
+            'email' => 'required|email',
+            'username' => 'required',
+            'phone' => 'required',
+            'password' => 'nullable|min:6', // Tambahkan validasi untuk password
         ]);
 
         if ($validator->fails()) {
@@ -139,6 +140,10 @@ class UserController extends Controller
         $user->username = $request->username;
         $user->phone = $request->phone;
 
+        if ($request->filled('password')) {
+            $user->password = bcrypt($request->password); // Enkripsi password baru
+        }
+
         if ($user->save()) {
             return response()->json([
                 'status' => true,
@@ -152,6 +157,7 @@ class UserController extends Controller
             'message' => 'Failed to update profile'
         ], 500);
     }
+
 
     public function profile($id)
     {

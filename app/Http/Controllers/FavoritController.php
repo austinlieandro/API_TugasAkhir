@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\DB;
 
 class FavoritController extends Controller
 {
-    public function favoritBengkel(Request $request)
+    public function toggleFavoritBengkel(Request $request)
     {
         $request->validate([
             'users_id' => 'required|exists:users,id',
@@ -15,19 +15,38 @@ class FavoritController extends Controller
         ]);
 
         $favorit = DB::table('favorit')
-            ->where('users_id', $request->users_id)
+        ->where('users_id', $request->users_id)
             ->where('bengkels_id', $request->bengkels_id)
             ->first();
 
         if ($favorit) {
+            $newStatus = $favorit->status_favorit == '1' ? '0' : '1';
+
+            if ($newStatus == '0') {
+                DB::table('favorit')
+                ->where('users_id', $request->users_id)
+                    ->where('bengkels_id', $request->bengkels_id)
+                    ->delete();
+
+                $message = 'Bengkel berhasil dihapus dari favorit';
+            } else {
+                DB::table('favorit')
+                ->where('users_id', $request->users_id)
+                    ->where('bengkels_id', $request->bengkels_id)
+                    ->update(['status_favorit' => $newStatus]);
+
+                $message = 'Bengkel berhasil ditambahkan ke favorit';
+            }
+
             return response()->json([
-                'status' => false,
-                'message' => 'Bengkel sudah ditambahkan ke favorit',
-            ], 400);
+                'status' => true,
+                'message' => $message,
+            ], 200);
         } else {
             DB::table('favorit')->insert([
                 'users_id' => $request->users_id,
                 'bengkels_id' => $request->bengkels_id,
+                'status_favorit' => '1',
             ]);
 
             return response()->json([
@@ -37,35 +56,6 @@ class FavoritController extends Controller
         }
     }
 
-    public function unfavoritBengkel(Request $request)
-    {
-        $request->validate([
-            'users_id' => 'required|exists:users,id',
-            'bengkels_id' => 'required|exists:bengkels,id',
-        ]);
-
-        $favorit = DB::table('favorit')
-            ->where('users_id', $request->users_id)
-            ->where('bengkels_id', $request->bengkels_id)
-            ->first();
-
-        if ($favorit) {
-            DB::table('favorit')
-                ->where('users_id', $request->users_id)
-                ->where('bengkels_id', $request->bengkels_id)
-                ->delete();
-
-            return response()->json([
-                'status' => true,
-                'message' => 'Bengkel berhasil dihapus dari favorit',
-            ], 200);
-        } else {
-            return response()->json([
-                'status' => false,
-                'message' => 'Bengkel belum ditambahkan ke favorit',
-            ], 400);
-        }
-    }
 
     public function displayUserFavorit($user_id)
     {
