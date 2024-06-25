@@ -72,7 +72,8 @@ class KendaraanController extends Controller
     public function updateKendaraan(Request $request, $users_id, $kendaraan_id)
     {
         $validator = Validator::make($request->all(), [
-            'plat_kendaraan' => 'required'
+            'plat_kendaraan' => 'required',
+            'merek_kendaraan' => 'required',
         ]);
 
         if ($validator->fails()) {
@@ -88,6 +89,7 @@ class KendaraanController extends Controller
         }
 
         $kendaraan->plat_kendaraan = $request->plat_kendaraan;
+        $kendaraan->merek_kendaraan = $request->merek_kendaraan;
         $kendaraan->save();
 
         return response()->json([
@@ -125,5 +127,23 @@ class KendaraanController extends Controller
                 'message' => 'Gagal menghapus data kendaraan',
             ], 500);
         }
+    }
+
+    public function kendaraanDetail($users_id, $kendaraan_id)
+    {
+        $kendaraan = Kendaraan::where('id', $kendaraan_id)->where('users_id', $users_id)->first();
+
+        if (!$kendaraan) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Kendaraan tidak ditemukan',
+            ], 404);
+        }
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Kendaraan ditemukan',
+            'kendaraan' => $kendaraan,
+        ], 200);
     }
 }

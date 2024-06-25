@@ -163,10 +163,7 @@ class ReservasiController extends Controller
             ->select(
                 'reservasi.*',
                 'users.name as user_name',
-                'bengkels.nama_bengkel',
-                'bengkels.lokasi_bengkel',
-                'bengkels.number_bengkel',
-                'bengkels.alamat_bengkel',
+                'users.phone as user_phone',
                 'karyawan.nama_karyawan'
             )
             ->get();
@@ -181,6 +178,41 @@ class ReservasiController extends Controller
         return response()->json([
             'status' => true,
             'message' => 'Berhasil menampilkan reservasi untuk bengkel ini',
+            'reservasi' => $reservasi,
+        ], 200);
+    }
+
+    public function detailReservasi($id)
+    {
+        $reservasi = DB::table('reservasi')
+        ->join('users', 'reservasi.users_id', '=', 'users.id')
+        ->join('bengkels', 'reservasi.bengkels_id', '=', 'bengkels.id')
+        ->leftJoin('karyawan', 'reservasi.karyawan_id', '=', 'karyawan.id')
+        ->where('reservasi.id', $id)
+            ->select(
+                'reservasi.*',
+                'users.name as user_name',
+                'users.email as user_email',
+                'users.phone as user_phone',
+                'bengkels.nama_bengkel',
+                'bengkels.lokasi_bengkel',
+                'bengkels.number_bengkel',
+                'bengkels.alamat_bengkel',
+                'bengkels.gmaps_bengkel',
+                'karyawan.nama_karyawan'
+            )
+            ->first();
+
+        if (!$reservasi) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Reservasi tidak ditemukan',
+            ], 404);
+        }
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Detail reservasi berhasil ditemukan',
             'reservasi' => $reservasi,
         ], 200);
     }

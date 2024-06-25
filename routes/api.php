@@ -36,3 +36,5 @@ Route::get('/showReservasiUser/{id}', [ReservasiController::class, 'displayReser
 Route::get('/showReservasiBengkel/{id}', [ReservasiController::class, 'displayReservasiBengkel']);
 Route::get('/displayUserFavorit/{id}', [FavoritController::class, 'displayUserFavorit']);
 Route::get('/profile/{id}', [UserController::class, 'profile']);
+Route::get('/detailReservasiBengkel/{id}', [ReservasiController::class, 'detailReservasi']);
+Route::get('/detailKendaraan/{usersId}/{kendaraan_id}', [KendaraanController::class, 'kendaraanDetail']);
