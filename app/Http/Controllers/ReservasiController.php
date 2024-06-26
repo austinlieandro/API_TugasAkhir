@@ -20,6 +20,7 @@ class ReservasiController extends Controller
             'kendaraan_reservasi' => 'required',
             'bengkels_id' => 'required|integer',
             'users_id' => 'required|integer',
+            'kendaraan_id' => 'required|integer'
         ]);
 
         if ($validator->fails()) {
@@ -29,6 +30,7 @@ class ReservasiController extends Controller
         $tanggal_reservasi = $request->tanggal_reservasi;
         $jam_reservasi = $request->jam_reservasi;
         $bengkels_id = (int) $request->bengkels_id;
+        $kendaraan_id = (int) $request->kendaraan_id;
 
         $englishDayOfWeek = date('l', strtotime($tanggal_reservasi));
 
@@ -62,6 +64,7 @@ class ReservasiController extends Controller
                 'kendaraan_reservasi' => $request->kendaraan_reservasi,
                 'bengkels_id' => $bengkels_id,
                 'users_id' => (int) $request->users_id,
+                'kendaraan_id' => (int)$request->kendaraan_id,
             ]);
 
             if ($reservasi) {
@@ -105,11 +108,11 @@ class ReservasiController extends Controller
             ], 404);
         }
 
-        if ($request->has('karyawan_id')) {
+        if ($request->filled('karyawan_id') && $request->karyawan_id != 0) {
             $reservasi->karyawan_id = (int)$request->karyawan_id;
         }
 
-        if ($request->has('status_reservasi')) {
+        if ($request->filled('status_reservasi')) {
             $reservasi->status_reservasi = $request->status_reservasi;
         }
 
@@ -127,6 +130,7 @@ class ReservasiController extends Controller
         $reservasi = DB::table('reservasi')
             ->join('bengkels', 'reservasi.bengkels_id', '=', 'bengkels.id')
             ->leftJoin('karyawan', 'reservasi.karyawan_id', '=', 'karyawan.id')
+            ->leftJoin('kendaraan', 'reservasi.kendaraan_id', '=', 'kendaraan.id')
             ->where('reservasi.users_id', $users_id)
             ->select(
                 'reservasi.*',
@@ -135,7 +139,9 @@ class ReservasiController extends Controller
                 'bengkels.number_bengkel',
                 'bengkels.alamat_bengkel',
                 'bengkels.gmaps_bengkel',
-                'karyawan.nama_karyawan'
+                'karyawan.nama_karyawan',
+                'kendaraan.merek_kendaraan',
+                'kendaraan.plat_kendaraan'
             )
             ->get();
 
@@ -159,12 +165,15 @@ class ReservasiController extends Controller
             ->join('users', 'reservasi.users_id', '=', 'users.id')
             ->join('bengkels', 'reservasi.bengkels_id', '=', 'bengkels.id')
             ->leftJoin('karyawan', 'reservasi.karyawan_id', '=', 'karyawan.id')
+            ->leftJoin('kendaraan', 'reservasi.kendaraan_id', '=', 'kendaraan.id')
             ->where('reservasi.bengkels_id', $bengkels_id)
             ->select(
                 'reservasi.*',
                 'users.name as user_name',
                 'users.phone as user_phone',
-                'karyawan.nama_karyawan'
+                'karyawan.nama_karyawan',
+                'kendaraan.merek_kendaraan',
+                'kendaraan.plat_kendaraan'
             )
             ->get();
 
@@ -185,10 +194,10 @@ class ReservasiController extends Controller
     public function detailReservasi($id)
     {
         $reservasi = DB::table('reservasi')
-        ->join('users', 'reservasi.users_id', '=', 'users.id')
-        ->join('bengkels', 'reservasi.bengkels_id', '=', 'bengkels.id')
-        ->leftJoin('karyawan', 'reservasi.karyawan_id', '=', 'karyawan.id')
-        ->where('reservasi.id', $id)
+            ->join('users', 'reservasi.users_id', '=', 'users.id')
+            ->join('bengkels', 'reservasi.bengkels_id', '=', 'bengkels.id')
+            ->leftJoin('karyawan', 'reservasi.karyawan_id', '=', 'karyawan.id')
+            ->where('reservasi.id', $id)
             ->select(
                 'reservasi.*',
                 'users.name as user_name',

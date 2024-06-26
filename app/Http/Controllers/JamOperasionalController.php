@@ -53,11 +53,10 @@ class JamOperasionalController extends Controller
         ], 409);
     }
 
-    public function updateJamOperasional(Request $request, $bengkels_id, $id)
+    public function updateJamOperasional(Request $request, $bengkelId, $id)
     {
         $validator = Validator::make($request->all(), [
             'jam_operasional' => 'required|string',
-            'hari_operasional' => 'required|string',
             'slot' => 'required|integer',
         ]);
 
@@ -66,7 +65,7 @@ class JamOperasionalController extends Controller
         }
 
         $jamOperasional = JamOperasional::where('id', $id)
-            ->where('bengkels_id', $bengkels_id)
+            ->where('bengkels_id', $bengkelId)
             ->first();
 
         if (!$jamOperasional) {
@@ -75,8 +74,7 @@ class JamOperasionalController extends Controller
 
         $jamOperasional->update([
             'jam_operasional' => $request->jam_operasional,
-            'hari_operasional' => $request->hari_operasional,
-            'slot' => $request->slot,
+            'slot' => (int)$request->slot,
         ]);
 
         return response()->json([

@@ -95,7 +95,7 @@ class UserController extends Controller
             'email' => 'required|email',
             'username' => 'required',
             'phone' => 'required',
-            'password' => 'nullable|min:6', // Tambahkan validasi untuk password
+            'password' => 'nullable|min:6',
         ]);
 
         if ($validator->fails()) {

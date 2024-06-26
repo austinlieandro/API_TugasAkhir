@@ -19,5 +19,6 @@ class Reservasi extends Model
         'bengkels_id',
         'users_id',
         'karyawan_id',
+        'kendaraan_id',
     ];
 }
