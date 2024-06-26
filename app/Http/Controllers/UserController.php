@@ -141,7 +141,7 @@ class UserController extends Controller
         $user->phone = $request->phone;
 
         if ($request->filled('password')) {
-            $user->password = bcrypt($request->password); // Enkripsi password baru
+            $user->password = bcrypt($request->password);
         }
 
         if ($user->save()) {
