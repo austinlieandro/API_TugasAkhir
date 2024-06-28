@@ -20,5 +20,7 @@ class Reservasi extends Model
         'users_id',
         'karyawan_id',
         'kendaraan_id',
+        'prioritas',
+        'created_at'
     ];
 }
