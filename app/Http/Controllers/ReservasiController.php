@@ -131,23 +131,49 @@ class ReservasiController extends Controller
         if ($jenis_kendaraan == 'mobil') {
             switch ($jenis_kerusakan) {
                 case 'oli':
+                    $faktor_urgensi = 3;
+                    break;
                 case 'rem':
+                    $faktor_urgensi = 4;
+                    break;
                 case 'busi':
+                    $faktor_urgensi = 3;
+                    break;
                 case 'aki':
+                    $faktor_urgensi = 3;
+                    break;
                 case 'listrik':
+                    $faktor_urgensi = 4;
+                    break;
                 case 'suspensi':
                     $faktor_urgensi = 4;
                     break;
                 case 'mesin':
-                case 'ban':
-                case 'rantai':
-                case 'karburator':
-                case 'body':
-                case 'filter':
-                case 'ac':
-                case 'transmisi':
-                case 'radiator':
                     $faktor_urgensi = 5;
+                    break;
+                case 'ban':
+                    $faktor_urgensi = 3;
+                    break;
+                case 'rantai':
+                    $faktor_urgensi = 4;
+                    break;
+                case 'karburator':
+                    $faktor_urgensi = 3;
+                    break;
+                case 'body':
+                    $faktor_urgensi = 4;
+                    break;
+                case 'filter':
+                    $faktor_urgensi = 3;
+                    break;
+                case 'ac':
+                    $faktor_urgensi = 3;
+                    break;
+                case 'transmisi':
+                    $faktor_urgensi = 5;
+                    break;
+                case 'radiator':
+                    $faktor_urgensi = 4;
                     break;
                 default:
                     $faktor_urgensi = 0;
@@ -156,22 +182,46 @@ class ReservasiController extends Controller
         } elseif ($jenis_kendaraan == 'motor') {
             switch ($jenis_kerusakan) {
                 case 'oli':
+                    $faktor_urgensi = 2;
+                    break;
                 case 'rem':
-                case 'busi':
-                case 'aki':
-                case 'listrik':
-                case 'suspensi':
                     $faktor_urgensi = 3;
                     break;
+                case 'busi':
+                    $faktor_urgensi = 2;
+                    break;
+                case 'aki':
+                    $faktor_urgensi = 2;
+                    break;
+                case 'listrik':
+                    $faktor_urgensi = 3;
+                    break;
+                case 'suspensi':
+                    $faktor_urgensi = 2;
+                    break;
                 case 'mesin':
-                case 'ban':
-                case 'rantai':
-                case 'karburator':
-                case 'body':
-                case 'filter':
-                case 'transmisi':
-                case 'radiator':
                     $faktor_urgensi = 4;
+                    break;
+                case 'ban':
+                    $faktor_urgensi = 2;
+                    break;
+                case 'rantai':
+                    $faktor_urgensi = 2;
+                    break;
+                case 'karburator':
+                    $faktor_urgensi = 2;
+                    break;
+                case 'body':
+                    $faktor_urgensi = 3;
+                    break;
+                case 'filter':
+                    $faktor_urgensi = 2;
+                    break;
+                case 'transmisi':
+                    $faktor_urgensi = 3;
+                    break;
+                case 'radiator':
+                    $faktor_urgensi = 2;
                     break;
                 default:
                     $faktor_urgensi = 0;
@@ -387,18 +437,18 @@ class ReservasiController extends Controller
             )
             ->get();
 
-        if ($reservasi->isEmpty()) {
+        if ($reservasi) {
             return response()->json([
-                'status' => false,
-                'message' => 'Tidak ada reservasi untuk user ini',
-            ], 404);
+                'status' => true,
+                'message' => 'Berhasil menampilkan reservasi untuk user ini',
+                'reservasi' => $reservasi,
+            ], 200);
         }
 
         return response()->json([
-            'status' => true,
-            'message' => 'Berhasil menampilkan reservasi untuk user ini',
-            'reservasi' => $reservasi,
-        ], 200);
+            'status' => false,
+            'message' => 'Tidak ada reservasi untuk user ini',
+        ], 404);
     }
 
     public function displayReservasiBengkel($bengkels_id)
