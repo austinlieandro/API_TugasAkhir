@@ -424,6 +424,7 @@ class ReservasiController extends Controller
             ->leftJoin('karyawan', 'reservasi.karyawan_id', '=', 'karyawan.id')
             ->leftJoin('kendaraan', 'reservasi.kendaraan_id', '=', 'kendaraan.id')
             ->where('reservasi.users_id', $users_id)
+            ->orderBy('reservasi.created_at', 'desc')
             ->select(
                 'reservasi.*',
                 'bengkels.nama_bengkel',
@@ -459,6 +460,7 @@ class ReservasiController extends Controller
             ->leftJoin('karyawan', 'reservasi.karyawan_id', '=', 'karyawan.id')
             ->leftJoin('kendaraan', 'reservasi.kendaraan_id', '=', 'kendaraan.id')
             ->where('reservasi.bengkels_id', $bengkels_id)
+            ->orderBy('reservasi.created_at', 'desc')
             ->select(
                 'reservasi.*',
                 'users.name as user_name',
@@ -469,18 +471,18 @@ class ReservasiController extends Controller
             )
             ->get();
 
-        if ($reservasi->isEmpty()) {
+        if ($reservasi) {
             return response()->json([
-                'status' => false,
-                'message' => 'Tidak ada reservasi untuk bengkel ini',
-            ], 404);
+                'status' => true,
+                'message' => 'Berhasil menampilkan reservasi untuk user ini',
+                'reservasi' => $reservasi,
+            ], 200);
         }
 
         return response()->json([
-            'status' => true,
-            'message' => 'Berhasil menampilkan reservasi untuk bengkel ini',
-            'reservasi' => $reservasi,
-        ], 200);
+            'status' => false,
+            'message' => 'Tidak ada reservasi untuk user ini',
+        ], 404);
     }
 
     public function detailReservasi($id)
@@ -489,6 +491,7 @@ class ReservasiController extends Controller
             ->join('users', 'reservasi.users_id', '=', 'users.id')
             ->join('bengkels', 'reservasi.bengkels_id', '=', 'bengkels.id')
             ->leftJoin('karyawan', 'reservasi.karyawan_id', '=', 'karyawan.id')
+            ->leftJoin('kendaraan', 'reservasi.kendaraan_id', '=', 'kendaraan.id')
             ->where('reservasi.id', $id)
             ->select(
                 'reservasi.*',
@@ -500,7 +503,9 @@ class ReservasiController extends Controller
                 'bengkels.number_bengkel',
                 'bengkels.alamat_bengkel',
                 'bengkels.gmaps_bengkel',
-                'karyawan.nama_karyawan'
+                'karyawan.nama_karyawan',
+                'kendaraan.merek_kendaraan',
+                'kendaraan.plat_kendaraan'
             )
             ->first();
 
