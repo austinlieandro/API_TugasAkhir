@@ -15,7 +15,7 @@ class FavoritController extends Controller
         ]);
 
         $favorit = DB::table('favorit')
-        ->where('users_id', $request->users_id)
+            ->where('users_id', $request->users_id)
             ->where('bengkels_id', $request->bengkels_id)
             ->first();
 
@@ -24,14 +24,14 @@ class FavoritController extends Controller
 
             if ($newStatus == '0') {
                 DB::table('favorit')
-                ->where('users_id', $request->users_id)
+                    ->where('users_id', $request->users_id)
                     ->where('bengkels_id', $request->bengkels_id)
                     ->delete();
 
                 $message = 'Bengkel berhasil dihapus dari favorit';
             } else {
                 DB::table('favorit')
-                ->where('users_id', $request->users_id)
+                    ->where('users_id', $request->users_id)
                     ->where('bengkels_id', $request->bengkels_id)
                     ->update(['status_favorit' => $newStatus]);
 
@@ -75,7 +75,6 @@ class FavoritController extends Controller
             ->get()
             ->map(function ($bengkel) {
                 $bengkel->jenis_kendaraan = json_decode($bengkel->jenis_kendaraan);
-                $bengkel->jenis_layanan = json_decode($bengkel->jenis_layanan);
                 $bengkel->hari_operasional = json_decode($bengkel->hari_operasional);
                 return $bengkel;
             });

@@ -203,7 +203,6 @@ class ReservasiController extends Controller
             'tanggal_reservasi' => 'required|date',
             'jam_reservasi' => 'required',
             'jeniskendala_reservasi' => 'required|string',
-            'detail_reservasi' => 'required',
             'kendaraan_reservasi' => 'required',
             'bengkels_id' => 'required|integer',
             'users_id' => 'required|integer',
@@ -259,6 +258,7 @@ class ReservasiController extends Controller
             $reservasiSama = Reservasi::where('tanggal_reservasi', $tanggal_reservasi)
                 ->where('jam_reservasi', $jam_reservasi)
                 ->where('bengkels_id', $bengkels_id)
+                ->where('created_at', $createdAtNow)
                 ->orderBy('jeniskendala_reservasi', 'desc')
                 ->get();
 
@@ -288,7 +288,7 @@ class ReservasiController extends Controller
                 'users_id' => (int) $request->users_id,
                 'kendaraan_id' => (int)$request->kendaraan_id,
                 'created_at' => $createdAtNow,
-                'prioritas' => (double)$prioritas,
+                'prioritas' => (float)$prioritas,
             ]);
 
 
@@ -423,7 +423,7 @@ class ReservasiController extends Controller
             )
             ->get();
 
-        if ($reservasi->isNotEmpty()) {
+        if ($reservasi) {
             return response()->json([
                 'status' => true,
                 'message' => 'Berhasil menampilkan reservasi untuk user ini',
