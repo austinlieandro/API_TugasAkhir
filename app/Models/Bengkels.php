@@ -15,7 +15,6 @@ class Bengkels extends Model
         'alamat_bengkel',
         'gmaps_bengkel',
         'jenis_kendaraan',
-        'jenis_layanan',
         'hari_operasional',
         'jam_buka',
         'jam_tutup',
@@ -24,7 +23,6 @@ class Bengkels extends Model
 
     protected $casts = [
         'jenis_kendaraan' => 'json',
-        'jenis_layanan' => 'json',
         'hari_operasional' => 'json',
     ];
 }

@@ -2,16 +2,16 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Kendaraan extends Model
+class MerekKendaraan extends Model
 {
     public $timestamps = false;
-    protected $table = 'kendaraan';
+    protected $table = 'merek_kendaraan';
     protected $fillable = [
         'jenis_kendaraan',
-        'plat_kendaraan',
+        'merek_kendaraan',
         'users_id',
-        'merek_kendaraan_id'
     ];
 }

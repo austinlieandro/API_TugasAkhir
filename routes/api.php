@@ -3,8 +3,10 @@
 use App\Http\Controllers\BengkelController;
 use App\Http\Controllers\FavoritController;
 use App\Http\Controllers\JamOperasionalController;
+use App\Http\Controllers\JenisLayananController;
 use App\Http\Controllers\KaryawanController;
 use App\Http\Controllers\KendaraanController;
+use App\Http\Controllers\MerekKendaraanController;
 use App\Http\Controllers\ReservasiController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -25,7 +27,11 @@ Route::post('/deleteKendaraan/{userId}/{id}', [KendaraanController::class, 'dele
 Route::post('/updateBengkel/{usersId}/{id}', [BengkelController::class, 'editBengkel']);
 Route::post('/userReservasi', [ReservasiController::class, 'userReservasi']);
 Route::post('/assignKaryawan', [ReservasiController::class, 'assignKaryawan']);
-Route::post('togleFavorite', [FavoritController::class, 'toggleFavoritBengkel']);
+Route::post('/togleFavorite', [FavoritController::class, 'toggleFavoritBengkel']);
+Route::post('/inputJenisLayanan', [JenisLayananController::class, 'inputJenisLayanan']);
+Route::post('/updateJenisLayanan/{bengkelId}/{id}', [JenisLayananController::class, 'editJenisLayanan']);
+Route::post('/inputMerekKendaraan', [MerekKendaraanController::class, 'inputMerekKendaraan']);
+Route::post('/updateMerekKendaraan/{usersId}/{merek_kendaraan_id}', [MerekKendaraanController::class, 'updateMerekKendaraan']);
 
 Route::get('/bengkel', [BengkelController::class, 'showAllbengkels']);
 Route::get('/bengkel/{usersId}/{bengkelsId}', [BengkelController::class, 'detailBengkels']);
@@ -37,3 +43,6 @@ Route::get('/displayUserFavorit/{id}', [FavoritController::class, 'displayUserFa
 Route::get('/profile/{id}', [UserController::class, 'profile']);
 Route::get('/detailReservasiBengkel/{id}', [ReservasiController::class, 'detailReservasi']);
 Route::get('/detailKendaraan/{usersId}/{kendaraan_id}', [KendaraanController::class, 'kendaraanDetail']);
+Route::get('/jenisLayanan/{bengkelId}', [JenisLayananController::class, 'displayJenisLayanan']);
+Route::get('/detailJenisLayanan/{id}', [JenisLayananController::class, 'detailJenisLayanan']);
+Route::get('/displayMerekKendaraan', [MerekKendaraanController::class, 'displayMerekKendaraan']);

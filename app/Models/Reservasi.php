@@ -16,6 +16,7 @@ class Reservasi extends Model
         'jeniskendala_reservasi',
         'detail_reservasi',
         'kendaraan_reservasi',
+        'prioritas',
         'bengkels_id',
         'users_id',
         'karyawan_id',

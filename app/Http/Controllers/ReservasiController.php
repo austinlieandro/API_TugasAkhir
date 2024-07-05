@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\JamOperasional;
+use App\Models\JenisLayanan;
 use App\Models\Reservasi;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -10,234 +11,198 @@ use Illuminate\Support\Facades\Validator;
 
 class ReservasiController extends Controller
 {
-    private function hitungPrioritas($jenis_kendaraan, $jenis_kerusakan)
+    private function hitungPrioritas($jenis_kendaraan, $jeniskendala_reservasi, $hargaLayanan)
     {
         $jenis_kendaraan = strtolower($jenis_kendaraan);
-        $jenis_kerusakan = strtolower($jenis_kerusakan);
+        $jenisLayanan = JenisLayanan::where('nama_layanan', $jeniskendala_reservasi)->first();
+
+        if (!$jenisLayanan) {
+            return 0;
+        }
+
+        $jenisLayananData = is_array($jenisLayanan->jenis_layanan) ? $jenisLayanan->jenis_layanan : json_decode($jenisLayanan->jenis_layanan, true);
 
         $bobot_nilai = 0;
-        if ($jenis_kendaraan == 'mobil') {
-            switch ($jenis_kerusakan) {
-                case 'oli':
-                    $bobot_nilai = 6;
-                    break;
-                case 'rem':
-                    $bobot_nilai = 10;
-                    break;
-                case 'busi':
-                    $bobot_nilai = 5;
-                    break;
-                case 'aki':
-                    $bobot_nilai = 7;
-                    break;
-                case 'listrik':
-                    $bobot_nilai = 9;
-                    break;
-                case 'suspensi':
-                    $bobot_nilai = 8;
-                    break;
-                case 'mesin':
-                    $bobot_nilai = 10;
-                    break;
-                case 'ban':
-                    $bobot_nilai = 7;
-                    break;
-                case 'rantai':
-                    $bobot_nilai = 8;
-                    break;
-                case 'karburator':
-                    $bobot_nilai = 7;
-                    break;
-                case 'body':
-                    $bobot_nilai = 6;
-                    break;
-                case 'filter':
-                    $bobot_nilai = 5;
-                    break;
-                case 'ac':
-                    $bobot_nilai = 6;
-                    break;
-                case 'transmisi':
-                    $bobot_nilai = 9;
-                    break;
-                case 'radiator':
-                    $bobot_nilai = 8;
-                    break;
-                default:
-                    $bobot_nilai = 0;
-                    break;
-            }
-        } elseif ($jenis_kendaraan == 'motor') {
-            switch ($jenis_kerusakan) {
-                case 'oli':
-                    $bobot_nilai = 4;
-                    break;
-                case 'rem':
-                    $bobot_nilai = 8;
-                    break;
-                case 'busi':
-                    $bobot_nilai = 3;
-                    break;
-                case 'aki':
-                    $bobot_nilai = 5;
-                    break;
-                case 'listrik':
-                    $bobot_nilai = 6;
-                    break;
-                case 'suspensi':
-                    $bobot_nilai = 5;
-                    break;
-                case 'mesin':
-                    $bobot_nilai = 8;
-                    break;
-                case 'ban':
-                    $bobot_nilai = 5;
-                    break;
-                case 'rantai':
-                    $bobot_nilai = 6;
-                    break;
-                case 'karburator':
-                    $bobot_nilai = 5;
-                    break;
-                case 'body':
-                    $bobot_nilai = 3;
-                    break;
-                case 'filter':
-                    $bobot_nilai = 4;
-                    break;
-                case 'transmisi':
-                    $bobot_nilai = 7;
-                    break;
-                case 'radiator':
-                    $bobot_nilai = 6;
-                    break;
-                default:
-                    $bobot_nilai = 0;
-                    break;
+
+        $prioritasMapMobil = [
+            'oli' => 6,
+            'rem' => 10,
+            'busi' => 5,
+            'aki' => 7,
+            'listrik' => 9,
+            'suspensi' => 8,
+            'mesin' => 10,
+            'ban' => 7,
+            'rantai' => 8,
+            'karburator/injektor' => 7,
+            'body' => 6,
+            'filter' => 5,
+            'ac' => 6,
+            'transmisi' => 9,
+            'radiator' => 8
+        ];
+
+        $prioritasMapMotor = [
+            'oli' => 4,
+            'rem' => 8,
+            'busi' => 3,
+            'aki' => 5,
+            'listrik' => 6,
+            'suspensi' => 5,
+            'mesin' => 8,
+            'ban' => 5,
+            'rantai' => 6,
+            'karburator/injektor' => 5,
+            'body' => 3,
+            'filter' => 4,
+            'transmisi' => 7,
+            'radiator' => 6
+        ];
+
+        $estimasiWaktuMapMobil = [
+            'oli' => 1,
+            'rem' => 2,
+            'busi' => 1,
+            'aki' => 1,
+            'listrik' => 3,
+            'suspensi' => 4,
+            'mesin' => 4,
+            'ban' => 1,
+            'rantai' => 4,
+            'karburator/injektor' => 2,
+            'body' => 5,
+            'filter' => 1,
+            'ac' => 3,
+            'transmisi' => 5,
+            'radiator' => 2
+        ];
+
+        $estimasiWaktuMapMotor = [
+            'oli' => 1,
+            'rem' => 1,
+            'busi' => 1,
+            'aki' => 1,
+            'listrik' => 2,
+            'suspensi' => 1,
+            'mesin' => 3,
+            'ban' => 1,
+            'rantai' => 1,
+            'karburator/injektor' => 1,
+            'body' => 3,
+            'filter' => 1,
+            'transmisi' => 3,
+            'radiator' => 1
+        ];
+
+        $max_bobot = 0;
+        $max_estimasi_waktu = 0;
+        foreach ($jenisLayananData as $jenis_kerusakan) {
+            $jenis_kerusakan_lower = strtolower($jenis_kerusakan);
+            if ($jenis_kendaraan == 'mobil') {
+                $bobot = $prioritasMapMobil[$jenis_kerusakan_lower] ?? 0;
+                $estimasi_waktu = $estimasiWaktuMapMobil[$jenis_kerusakan_lower] ?? 0;
+                $max_bobot = max($max_bobot, $bobot);
+                $max_estimasi_waktu = max($max_estimasi_waktu, $estimasi_waktu);
+            } elseif ($jenis_kendaraan == 'motor') {
+                $bobot = $prioritasMapMotor[$jenis_kerusakan_lower] ?? 0;
+                $estimasi_waktu = $estimasiWaktuMapMotor[$jenis_kerusakan_lower] ?? 0;
+                $max_bobot = max($max_bobot, $bobot);
+                $max_estimasi_waktu = max($max_estimasi_waktu, $estimasi_waktu);
             }
         }
 
-        $prioritas = $bobot_nilai * $this->hitungFaktorUrgensi($jenis_kendaraan, $jenis_kerusakan);
+        $faktorUrgensi = $this->hitungFaktorUrgensi($jenis_kendaraan, $jeniskendala_reservasi);
+        $bobotHarga = $this->hitungBobotHarga($hargaLayanan);
 
+        $prioritas = ($max_bobot * $faktorUrgensi) / ($bobotHarga * $max_estimasi_waktu);
         return $prioritas;
     }
 
-    private function hitungFaktorUrgensi($jenis_kendaraan, $jenis_kerusakan)
+    private function hitungFaktorUrgensi($jenis_kendaraan, $jeniskendala_reservasi)
     {
         $jenis_kendaraan = strtolower($jenis_kendaraan);
-        $jenis_kerusakan = strtolower($jenis_kerusakan);
+        $jenisLayanan = JenisLayanan::where('nama_layanan', $jeniskendala_reservasi)->first();
+
+        if (!$jenisLayanan) {
+            return 0;
+        }
+
+        $jenisLayananData = is_array($jenisLayanan->jenis_layanan) ? $jenisLayanan->jenis_layanan : json_decode($jenisLayanan->jenis_layanan, true);
 
         $faktor_urgensi = 0;
-        if ($jenis_kendaraan == 'mobil') {
-            switch ($jenis_kerusakan) {
-                case 'oli':
-                    $faktor_urgensi = 3;
-                    break;
-                case 'rem':
-                    $faktor_urgensi = 4;
-                    break;
-                case 'busi':
-                    $faktor_urgensi = 3;
-                    break;
-                case 'aki':
-                    $faktor_urgensi = 3;
-                    break;
-                case 'listrik':
-                    $faktor_urgensi = 4;
-                    break;
-                case 'suspensi':
-                    $faktor_urgensi = 4;
-                    break;
-                case 'mesin':
-                    $faktor_urgensi = 5;
-                    break;
-                case 'ban':
-                    $faktor_urgensi = 3;
-                    break;
-                case 'rantai':
-                    $faktor_urgensi = 4;
-                    break;
-                case 'karburator':
-                    $faktor_urgensi = 3;
-                    break;
-                case 'body':
-                    $faktor_urgensi = 4;
-                    break;
-                case 'filter':
-                    $faktor_urgensi = 3;
-                    break;
-                case 'ac':
-                    $faktor_urgensi = 3;
-                    break;
-                case 'transmisi':
-                    $faktor_urgensi = 5;
-                    break;
-                case 'radiator':
-                    $faktor_urgensi = 4;
-                    break;
-                default:
-                    $faktor_urgensi = 0;
-                    break;
-            }
-        } elseif ($jenis_kendaraan == 'motor') {
-            switch ($jenis_kerusakan) {
-                case 'oli':
-                    $faktor_urgensi = 2;
-                    break;
-                case 'rem':
-                    $faktor_urgensi = 3;
-                    break;
-                case 'busi':
-                    $faktor_urgensi = 2;
-                    break;
-                case 'aki':
-                    $faktor_urgensi = 2;
-                    break;
-                case 'listrik':
-                    $faktor_urgensi = 3;
-                    break;
-                case 'suspensi':
-                    $faktor_urgensi = 2;
-                    break;
-                case 'mesin':
-                    $faktor_urgensi = 4;
-                    break;
-                case 'ban':
-                    $faktor_urgensi = 2;
-                    break;
-                case 'rantai':
-                    $faktor_urgensi = 2;
-                    break;
-                case 'karburator':
-                    $faktor_urgensi = 2;
-                    break;
-                case 'body':
-                    $faktor_urgensi = 3;
-                    break;
-                case 'filter':
-                    $faktor_urgensi = 2;
-                    break;
-                case 'transmisi':
-                    $faktor_urgensi = 3;
-                    break;
-                case 'radiator':
-                    $faktor_urgensi = 2;
-                    break;
-                default:
-                    $faktor_urgensi = 0;
-                    break;
+
+        $faktorUrgensiMapMobil = [
+            'oli' => 3,
+            'rem' => 4,
+            'busi' => 3,
+            'aki' => 3,
+            'listrik' => 4,
+            'suspensi' => 4,
+            'mesin' => 5,
+            'ban' => 3,
+            'rantai' => 4,
+            'karburator/injektor' => 3,
+            'body' => 4,
+            'filter' => 3,
+            'ac' => 3,
+            'transmisi' => 5,
+            'radiator' => 4
+        ];
+
+        $faktorUrgensiMapMotor = [
+            'oli' => 2,
+            'rem' => 3,
+            'busi' => 2,
+            'aki' => 2,
+            'listrik' => 3,
+            'suspensi' => 2,
+            'mesin' => 4,
+            'ban' => 2,
+            'rantai' => 2,
+            'karburator/injektor' => 2,
+            'body' => 3,
+            'filter' => 2,
+            'transmisi' => 3,
+            'radiator' => 2
+        ];
+
+        $max_faktor_urgensi = 0;
+        foreach ($jenisLayananData as $jenis_kerusakan) {
+            $jenis_kerusakan_lower = strtolower($jenis_kerusakan);
+            if ($jenis_kendaraan == 'mobil') {
+                $faktor_urgensi = $faktorUrgensiMapMobil[$jenis_kerusakan_lower] ?? 0;
+                $max_faktor_urgensi = max($max_faktor_urgensi, $faktor_urgensi);
+            } elseif ($jenis_kendaraan == 'motor') {
+                $faktor_urgensi = $faktorUrgensiMapMotor[$jenis_kerusakan_lower] ?? 0;
+                $max_faktor_urgensi = max($max_faktor_urgensi, $faktor_urgensi);
             }
         }
 
-        return $faktor_urgensi;
+        return $max_faktor_urgensi;
     }
+
+    private function hitungBobotHarga($hargaLayanan)
+    {
+        if ($hargaLayanan <= 100000) {
+            return 5;
+        } elseif ($hargaLayanan <= 200000) {
+            return 4;
+        } elseif ($hargaLayanan <= 300000) {
+            return 3;
+        } elseif ($hargaLayanan <= 400000) {
+            return 2;
+        } else {
+            return 1;
+        }
+    }
+
 
     public function userReservasi(Request $request)
     {
         $validator = Validator::make($request->all(), [
             'tanggal_reservasi' => 'required|date',
             'jam_reservasi' => 'required',
-            'jeniskendala_reservasi' => 'required',
+            'jeniskendala_reservasi' => 'required|string',
             'detail_reservasi' => 'required',
             'kendaraan_reservasi' => 'required',
             'bengkels_id' => 'required|integer',
@@ -248,6 +213,16 @@ class ReservasiController extends Controller
         if ($validator->fails()) {
             return response()->json($validator->errors(), 422);
         }
+
+        $jenisLayanan = JenisLayanan::where('nama_layanan', $request->jeniskendala_reservasi)->first();
+        if (!$jenisLayanan) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Jenis layanan tidak ditemukan'
+            ], 404);
+        }
+
+        $hargaLayanan = $jenisLayanan->harga_layanan;
 
         $tanggal_reservasi = $request->tanggal_reservasi;
         $jam_reservasi = $request->jam_reservasi;
@@ -277,17 +252,19 @@ class ReservasiController extends Controller
 
         if ($jamOperasional && $jamOperasional->slot <= 1) {
             $createdAtNow = now();
-            $prioritasBaru = $this->hitungPrioritas($request->kendaraan_reservasi, $request->jeniskendala_reservasi);
+
+            $prioritas = $this->hitungPrioritas($request->kendaraan_reservasi, $request->jeniskendala_reservasi, $hargaLayanan);
+
 
             $reservasiSama = Reservasi::where('tanggal_reservasi', $tanggal_reservasi)
                 ->where('jam_reservasi', $jam_reservasi)
                 ->where('bengkels_id', $bengkels_id)
-                ->orderBy('prioritas', 'desc')
+                ->orderBy('jeniskendala_reservasi', 'desc')
                 ->get();
 
             if ($reservasiSama->count() >= 1) {
-                $prioritasTertinggi = $reservasiSama->first()->prioritas;
-                if ($prioritasBaru > $prioritasTertinggi) {
+                $hargaLayananTertinggi = JenisLayanan::find($reservasiSama->first()->jeniskendala_reservasi)->harga_layanan;
+                if ($hargaLayanan > $hargaLayananTertinggi) {
                     foreach ($reservasiSama as $reservasi) {
                         $reservasi->status_reservasi = 'dibatalkan';
                         $reservasi->save();
@@ -295,7 +272,7 @@ class ReservasiController extends Controller
                 } else {
                     return response()->json([
                         'status' => false,
-                        'message' => 'Prioritas reservasi baru lebih rendah atau sama dengan reservasi yang ada',
+                        'message' => 'Harga layanan reservasi baru lebih rendah atau sama dengan reservasi yang ada',
                     ], 409);
                 }
             }
@@ -304,15 +281,16 @@ class ReservasiController extends Controller
                 'status_reservasi' => $status_reservasi,
                 'tanggal_reservasi' => $tanggal_reservasi,
                 'jam_reservasi' => $jam_reservasi,
-                'jeniskendala_reservasi' => $request->jeniskendala_reservasi,
+                'jeniskendala_reservasi' => $jenisLayanan->id,
                 'detail_reservasi' => $request->detail_reservasi,
                 'kendaraan_reservasi' => $request->kendaraan_reservasi,
                 'bengkels_id' => $bengkels_id,
                 'users_id' => (int) $request->users_id,
                 'kendaraan_id' => (int)$request->kendaraan_id,
-                'prioritas' => $prioritasBaru,
                 'created_at' => $createdAtNow,
+                'prioritas' => (double)$prioritas,
             ]);
+
 
             $jamOperasional->slot = 0;
             $jamOperasional->save();
@@ -324,18 +302,21 @@ class ReservasiController extends Controller
             ], 201);
         } else if ($jamOperasional && $jamOperasional->slot > 1) {
             $createdAtNow = now();
-            $prioritasBaru = $this->hitungPrioritas($request->kendaraan_reservasi, $request->jeniskendala_reservasi);
+            $hargaLayanan = $jenisLayanan->harga_layanan;
+
+            $prioritas = $this->hitungPrioritas($request->kendaraan_reservasi, $request->jeniskendala_reservasi, $hargaLayanan);
 
             if ($jamOperasional->slot == 1) {
                 $reservasiSama = Reservasi::where('tanggal_reservasi', $tanggal_reservasi)
                     ->where('jam_reservasi', $jam_reservasi)
                     ->where('bengkels_id', $bengkels_id)
-                    ->orderBy('prioritas', 'desc')
+                    ->orderBy('jeniskendala_reservasi', 'desc')
                     ->get();
 
                 if ($reservasiSama->count() >= 1) {
-                    $prioritasTertinggi = $reservasiSama->first()->prioritas;
-                    if ($prioritasBaru > $prioritasTertinggi) {
+                    $hargaLayananTertinggi = JenisLayanan::find($reservasiSama->first()->jeniskendala_reservasi)->harga_layanan;
+                    if ($hargaLayanan > $hargaLayananTertinggi) {
+                        $prioritas *= 2;
                         foreach ($reservasiSama as $reservasi) {
                             $reservasi->status_reservasi = 'dibatalkan';
                             $reservasi->save();
@@ -343,7 +324,7 @@ class ReservasiController extends Controller
                     } else {
                         return response()->json([
                             'status' => false,
-                            'message' => 'Prioritas reservasi baru lebih rendah atau sama dengan reservasi yang ada',
+                            'message' => 'Harga layanan reservasi baru lebih rendah atau sama dengan reservasi yang ada',
                         ], 409);
                     }
                 }
@@ -353,14 +334,14 @@ class ReservasiController extends Controller
                 'status_reservasi' => $status_reservasi,
                 'tanggal_reservasi' => $tanggal_reservasi,
                 'jam_reservasi' => $jam_reservasi,
-                'jeniskendala_reservasi' => $request->jeniskendala_reservasi,
+                'jeniskendala_reservasi' => $jenisLayanan->id,
                 'detail_reservasi' => $request->detail_reservasi,
                 'kendaraan_reservasi' => $request->kendaraan_reservasi,
                 'bengkels_id' => $bengkels_id,
                 'users_id' => (int) $request->users_id,
                 'kendaraan_id' => (int)$request->kendaraan_id,
-                'prioritas' => $prioritasBaru,
                 'created_at' => $createdAtNow,
+                'prioritas' => (int)$prioritas,
             ]);
 
             $jamOperasional->slot -= 1;
@@ -378,6 +359,7 @@ class ReservasiController extends Controller
             ], 409);
         }
     }
+
 
     public function assignKaryawan(Request $request)
     {
@@ -423,6 +405,8 @@ class ReservasiController extends Controller
             ->join('bengkels', 'reservasi.bengkels_id', '=', 'bengkels.id')
             ->leftJoin('karyawan', 'reservasi.karyawan_id', '=', 'karyawan.id')
             ->leftJoin('kendaraan', 'reservasi.kendaraan_id', '=', 'kendaraan.id')
+            ->leftJoin('jenis_layanan', 'reservasi.jeniskendala_reservasi', '=', 'jenis_layanan.id')
+            ->leftJoin('merek_kendaraan', 'reservasi.kendaraan_id', '=', 'merek_kendaraan.id')
             ->where('reservasi.users_id', $users_id)
             ->orderBy('reservasi.created_at', 'desc')
             ->select(
@@ -433,12 +417,13 @@ class ReservasiController extends Controller
                 'bengkels.alamat_bengkel',
                 'bengkels.gmaps_bengkel',
                 'karyawan.nama_karyawan',
-                'kendaraan.merek_kendaraan',
-                'kendaraan.plat_kendaraan'
+                'kendaraan.plat_kendaraan',
+                'jenis_layanan.nama_layanan',
+                'merek_kendaraan.merek_kendaraan'
             )
             ->get();
 
-        if ($reservasi) {
+        if ($reservasi->isNotEmpty()) {
             return response()->json([
                 'status' => true,
                 'message' => 'Berhasil menampilkan reservasi untuk user ini',
@@ -452,6 +437,7 @@ class ReservasiController extends Controller
         ], 404);
     }
 
+
     public function displayReservasiBengkel($bengkels_id)
     {
         $reservasi = DB::table('reservasi')
@@ -459,6 +445,8 @@ class ReservasiController extends Controller
             ->join('bengkels', 'reservasi.bengkels_id', '=', 'bengkels.id')
             ->leftJoin('karyawan', 'reservasi.karyawan_id', '=', 'karyawan.id')
             ->leftJoin('kendaraan', 'reservasi.kendaraan_id', '=', 'kendaraan.id')
+            ->leftJoin('jenis_layanan', 'reservasi.jeniskendala_reservasi', '=', 'jenis_layanan.id')
+            ->leftJoin('merek_kendaraan', 'reservasi.kendaraan_id', '=', 'merek_kendaraan.id')
             ->where('reservasi.bengkels_id', $bengkels_id)
             ->orderBy('reservasi.created_at', 'desc')
             ->select(
@@ -466,8 +454,9 @@ class ReservasiController extends Controller
                 'users.name as user_name',
                 'users.phone as user_phone',
                 'karyawan.nama_karyawan',
-                'kendaraan.merek_kendaraan',
-                'kendaraan.plat_kendaraan'
+                'kendaraan.plat_kendaraan',
+                'jenis_layanan.nama_layanan',
+                'merek_kendaraan.merek_kendaraan'
             )
             ->get();
 
@@ -492,6 +481,8 @@ class ReservasiController extends Controller
             ->join('bengkels', 'reservasi.bengkels_id', '=', 'bengkels.id')
             ->leftJoin('karyawan', 'reservasi.karyawan_id', '=', 'karyawan.id')
             ->leftJoin('kendaraan', 'reservasi.kendaraan_id', '=', 'kendaraan.id')
+            ->leftJoin('jenis_layanan', 'reservasi.jeniskendala_reservasi', '=', 'jenis_layanan.id')
+            ->leftJoin('merek_kendaraan', 'reservasi.kendaraan_id', '=', 'merek_kendaraan.id')
             ->where('reservasi.id', $id)
             ->select(
                 'reservasi.*',
@@ -504,8 +495,9 @@ class ReservasiController extends Controller
                 'bengkels.alamat_bengkel',
                 'bengkels.gmaps_bengkel',
                 'karyawan.nama_karyawan',
-                'kendaraan.merek_kendaraan',
-                'kendaraan.plat_kendaraan'
+                'kendaraan.plat_kendaraan',
+                'jenis_layanan.nama_layanan',
+                'merek_kendaraan.merek_kendaraan'
             )
             ->first();
 

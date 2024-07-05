@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Bengkels;
 use App\Models\JamOperasional;
+use App\Models\JenisLayanan;
 use App\Models\Users;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -19,7 +20,6 @@ class BengkelController extends Controller
             'number_bengkel' => 'required',
             'alamat_bengkel' => 'required',
             'jenis_kendaraan' => 'required|array',
-            'jenis_layanan' => 'required|array',
             'hari_operasional' => 'required|array',
             'jam_buka' => 'required',
             'jam_tutup' => 'required',
@@ -37,7 +37,6 @@ class BengkelController extends Controller
             'alamat_bengkel' => $request->alamat_bengkel,
             'gmaps_bengkel' => $request->gmaps_bengkel,
             'jenis_kendaraan' => $request->jenis_kendaraan,
-            'jenis_layanan' => $request->jenis_layanan,
             'hari_operasional' => $request->hari_operasional,
             'jam_buka' => $request->jam_buka,
             'jam_tutup' => $request->jam_tutup,
@@ -105,13 +104,14 @@ class BengkelController extends Controller
         }
 
         $bengkel->jenis_kendaraan = is_string($bengkel->jenis_kendaraan) ? json_decode($bengkel->jenis_kendaraan) : $bengkel->jenis_kendaraan;
-        $bengkel->jenis_layanan = is_string($bengkel->jenis_layanan) ? json_decode($bengkel->jenis_layanan) : $bengkel->jenis_layanan;
         $bengkel->hari_operasional = is_string($bengkel->hari_operasional) ? json_decode($bengkel->hari_operasional) : $bengkel->hari_operasional;
 
         $jamOperasional = JamOperasional::where('bengkels_id', $bengkels_id)->get();
 
+        $jenisLayanan = JenisLayanan::where('bengkels_id', $bengkels_id)->get();
+
         $favorit = DB::table('favorit')
-        ->where('users_id', $users_id)
+            ->where('users_id', $users_id)
             ->where('bengkels_id', $bengkels_id)
             ->first();
 
@@ -122,10 +122,10 @@ class BengkelController extends Controller
             'message' => 'Bengkel ditemukan',
             'bengkel' => $bengkel,
             'jam_operasional' => $jamOperasional,
+            'jenis_layanan' => $jenisLayanan,
             'status_favorit' => $statusFavorit,
         ], 201);
     }
-
 
     public function editBengkel(Request $request, $users_id, $id)
     {
@@ -136,7 +136,6 @@ class BengkelController extends Controller
             'alamat_bengkel' => 'required',
             'gmaps_bengkel' => 'required',
             'jenis_kendaraan' => 'required|array',
-            'jenis_layanan' => 'required|array',
             'hari_operasional' => 'required|array',
             'jam_buka' => 'required',
             'jam_tutup' => 'required',
@@ -161,7 +160,6 @@ class BengkelController extends Controller
         $bengkel->alamat_bengkel = $request->alamat_bengkel;
         $bengkel->gmaps_bengkel = $request->gmaps_bengkel;
         $bengkel->jenis_kendaraan = $request->jenis_kendaraan;
-        $bengkel->jenis_layanan = $request->jenis_layanan;
         $bengkel->hari_operasional = $request->hari_operasional;
         $bengkel->jam_buka = $request->jam_buka;
         $bengkel->jam_tutup = $request->jam_tutup;
