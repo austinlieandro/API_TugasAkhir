@@ -8,6 +8,7 @@ use App\Models\Reservasi;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Log;
 
 class ReservasiController extends Controller
 {
@@ -196,13 +197,13 @@ class ReservasiController extends Controller
         }
     }
 
-
     public function userReservasi(Request $request)
     {
         $validator = Validator::make($request->all(), [
             'tanggal_reservasi' => 'required|date',
             'jam_reservasi' => 'required',
             'jeniskendala_reservasi' => 'required|string',
+            'detail_reservasi' => 'required',
             'kendaraan_reservasi' => 'required',
             'bengkels_id' => 'required|integer',
             'users_id' => 'required|integer',
@@ -251,9 +252,8 @@ class ReservasiController extends Controller
 
         if ($jamOperasional && $jamOperasional->slot <= 1) {
             $createdAtNow = now();
-
+            // $createdAtNow = '2023-10-01 00:00:00';
             $prioritas = $this->hitungPrioritas($request->kendaraan_reservasi, $request->jeniskendala_reservasi, $hargaLayanan);
-
 
             $reservasiSama = Reservasi::where('tanggal_reservasi', $tanggal_reservasi)
                 ->where('jam_reservasi', $jam_reservasi)
@@ -263,16 +263,17 @@ class ReservasiController extends Controller
                 ->get();
 
             if ($reservasiSama->count() >= 1) {
-                $hargaLayananTertinggi = JenisLayanan::find($reservasiSama->first()->jeniskendala_reservasi)->harga_layanan;
-                if ($hargaLayanan > $hargaLayananTertinggi) {
+                $prioritasTertinggi = $reservasiSama->first()->prioritas;
+                if ($prioritas > $prioritasTertinggi) {
                     foreach ($reservasiSama as $reservasi) {
+                        $jamOperasional->slot += 1;
                         $reservasi->status_reservasi = 'dibatalkan';
                         $reservasi->save();
                     }
                 } else {
                     return response()->json([
                         'status' => false,
-                        'message' => 'Harga layanan reservasi baru lebih rendah atau sama dengan reservasi yang ada',
+                        'message' => 'prioritas reservasi baru lebih rendah atau sama dengan reservasi yang ada',
                     ], 409);
                 }
             }
@@ -291,7 +292,6 @@ class ReservasiController extends Controller
                 'prioritas' => (float)$prioritas,
             ]);
 
-
             $jamOperasional->slot = 0;
             $jamOperasional->save();
 
@@ -302,6 +302,7 @@ class ReservasiController extends Controller
             ], 201);
         } else if ($jamOperasional && $jamOperasional->slot > 1) {
             $createdAtNow = now();
+            // $createdAtNow = '2023-10-01 00:00:00';
             $hargaLayanan = $jenisLayanan->harga_layanan;
 
             $prioritas = $this->hitungPrioritas($request->kendaraan_reservasi, $request->jeniskendala_reservasi, $hargaLayanan);
@@ -310,13 +311,13 @@ class ReservasiController extends Controller
                 $reservasiSama = Reservasi::where('tanggal_reservasi', $tanggal_reservasi)
                     ->where('jam_reservasi', $jam_reservasi)
                     ->where('bengkels_id', $bengkels_id)
+                    ->where('created_at', $createdAtNow)
                     ->orderBy('jeniskendala_reservasi', 'desc')
                     ->get();
 
                 if ($reservasiSama->count() >= 1) {
-                    $hargaLayananTertinggi = JenisLayanan::find($reservasiSama->first()->jeniskendala_reservasi)->harga_layanan;
-                    if ($hargaLayanan > $hargaLayananTertinggi) {
-                        $prioritas *= 2;
+                    $prioritasTertinggi = $reservasiSama->first()->prioritas;
+                    if ($prioritas > $prioritasTertinggi) {
                         foreach ($reservasiSama as $reservasi) {
                             $reservasi->status_reservasi = 'dibatalkan';
                             $reservasi->save();
@@ -324,7 +325,7 @@ class ReservasiController extends Controller
                     } else {
                         return response()->json([
                             'status' => false,
-                            'message' => 'Harga layanan reservasi baru lebih rendah atau sama dengan reservasi yang ada',
+                            'message' => 'prioritas reservasi baru lebih rendah atau sama dengan reservasi yang ada',
                         ], 409);
                     }
                 }
@@ -341,7 +342,7 @@ class ReservasiController extends Controller
                 'users_id' => (int) $request->users_id,
                 'kendaraan_id' => (int)$request->kendaraan_id,
                 'created_at' => $createdAtNow,
-                'prioritas' => (int)$prioritas,
+                'prioritas' => (float)$prioritas,
             ]);
 
             $jamOperasional->slot -= 1;
@@ -359,7 +360,6 @@ class ReservasiController extends Controller
             ], 409);
         }
     }
-
 
     public function assignKaryawan(Request $request)
     {
