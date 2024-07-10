@@ -203,7 +203,7 @@ class ReservasiController extends Controller
             'tanggal_reservasi' => 'required|date',
             'jam_reservasi' => 'required',
             'jeniskendala_reservasi' => 'required|string',
-            'detail_reservasi' => 'required',
+            // 'detail_reservasi' => 'required',
             'kendaraan_reservasi' => 'required',
             'bengkels_id' => 'required|integer',
             'users_id' => 'required|integer',
@@ -406,7 +406,7 @@ class ReservasiController extends Controller
             ->leftJoin('karyawan', 'reservasi.karyawan_id', '=', 'karyawan.id')
             ->leftJoin('kendaraan', 'reservasi.kendaraan_id', '=', 'kendaraan.id')
             ->leftJoin('jenis_layanan', 'reservasi.jeniskendala_reservasi', '=', 'jenis_layanan.id')
-            ->leftJoin('merek_kendaraan', 'reservasi.kendaraan_id', '=', 'merek_kendaraan.id')
+            ->leftJoin('merek_kendaraan', 'kendaraan.merek_kendaraan_id', '=', 'merek_kendaraan.id')
             ->where('reservasi.users_id', $users_id)
             ->orderBy('reservasi.created_at', 'desc')
             ->select(
@@ -446,7 +446,7 @@ class ReservasiController extends Controller
             ->leftJoin('karyawan', 'reservasi.karyawan_id', '=', 'karyawan.id')
             ->leftJoin('kendaraan', 'reservasi.kendaraan_id', '=', 'kendaraan.id')
             ->leftJoin('jenis_layanan', 'reservasi.jeniskendala_reservasi', '=', 'jenis_layanan.id')
-            ->leftJoin('merek_kendaraan', 'reservasi.kendaraan_id', '=', 'merek_kendaraan.id')
+            ->leftJoin('merek_kendaraan', 'kendaraan.merek_kendaraan_id', '=', 'merek_kendaraan.id')
             ->where('reservasi.bengkels_id', $bengkels_id)
             ->orderBy('reservasi.created_at', 'desc')
             ->select(
@@ -477,18 +477,15 @@ class ReservasiController extends Controller
     public function detailReservasi($id)
     {
         $reservasi = DB::table('reservasi')
-            ->join('users', 'reservasi.users_id', '=', 'users.id')
             ->join('bengkels', 'reservasi.bengkels_id', '=', 'bengkels.id')
             ->leftJoin('karyawan', 'reservasi.karyawan_id', '=', 'karyawan.id')
             ->leftJoin('kendaraan', 'reservasi.kendaraan_id', '=', 'kendaraan.id')
             ->leftJoin('jenis_layanan', 'reservasi.jeniskendala_reservasi', '=', 'jenis_layanan.id')
-            ->leftJoin('merek_kendaraan', 'reservasi.kendaraan_id', '=', 'merek_kendaraan.id')
-            ->where('reservasi.id', $id)
+            ->leftJoin('merek_kendaraan', 'kendaraan.merek_kendaraan_id', '=', 'merek_kendaraan.id')
+            ->where('reservasi.users_id', $id)
+            ->orderBy('reservasi.created_at', 'desc')
             ->select(
                 'reservasi.*',
-                'users.name as user_name',
-                'users.email as user_email',
-                'users.phone as user_phone',
                 'bengkels.nama_bengkel',
                 'bengkels.lokasi_bengkel',
                 'bengkels.number_bengkel',
@@ -499,19 +496,19 @@ class ReservasiController extends Controller
                 'jenis_layanan.nama_layanan',
                 'merek_kendaraan.merek_kendaraan'
             )
-            ->first();
+            ->get();
 
-        if (!$reservasi) {
+        if ($reservasi) {
             return response()->json([
-                'status' => false,
-                'message' => 'Reservasi tidak ditemukan',
-            ], 404);
+                'status' => true,
+                'message' => 'Berhasil menampilkan reservasi untuk user ini',
+                'reservasi' => $reservasi,
+            ], 200);
         }
 
         return response()->json([
-            'status' => true,
-            'message' => 'Detail reservasi berhasil ditemukan',
-            'reservasi' => $reservasi,
-        ], 200);
+            'status' => false,
+            'message' => 'Tidak ada reservasi untuk user ini',
+        ], 404);
     }
 }
