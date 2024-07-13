@@ -418,12 +418,16 @@ class ReservasiController extends Controller
                 'bengkels.gmaps_bengkel',
                 'karyawan.nama_karyawan',
                 'kendaraan.plat_kendaraan',
-                'jenis_layanan.nama_layanan',
+                'jenis_layanan.jenis_layanan',
                 'merek_kendaraan.merek_kendaraan'
             )
             ->get();
 
         if ($reservasi) {
+            $reservasi->transform(function ($item, $key) {
+                $item->jenis_layanan = json_decode($item->jenis_layanan, true);
+                return $item;
+            });
             return response()->json([
                 'status' => true,
                 'message' => 'Berhasil menampilkan reservasi untuk user ini',
@@ -478,11 +482,12 @@ class ReservasiController extends Controller
     {
         $reservasi = DB::table('reservasi')
             ->join('bengkels', 'reservasi.bengkels_id', '=', 'bengkels.id')
+            ->join('users', 'reservasi.users_id', '=', 'users.id')
             ->leftJoin('karyawan', 'reservasi.karyawan_id', '=', 'karyawan.id')
             ->leftJoin('kendaraan', 'reservasi.kendaraan_id', '=', 'kendaraan.id')
             ->leftJoin('jenis_layanan', 'reservasi.jeniskendala_reservasi', '=', 'jenis_layanan.id')
             ->leftJoin('merek_kendaraan', 'kendaraan.merek_kendaraan_id', '=', 'merek_kendaraan.id')
-            ->where('reservasi.users_id', $id)
+            ->where('reservasi.id', $id)
             ->orderBy('reservasi.created_at', 'desc')
             ->select(
                 'reservasi.*',
@@ -494,11 +499,18 @@ class ReservasiController extends Controller
                 'karyawan.nama_karyawan',
                 'kendaraan.plat_kendaraan',
                 'jenis_layanan.nama_layanan',
-                'merek_kendaraan.merek_kendaraan'
+                'merek_kendaraan.merek_kendaraan',
+                'users.name',
+                'users.phone',
+                'jenis_layanan.jenis_layanan'
             )
             ->get();
 
         if ($reservasi) {
+            $reservasi->transform(function ($item, $key) {
+                $item->jenis_layanan = json_decode($item->jenis_layanan, true);
+                return $item;
+            });
             return response()->json([
                 'status' => true,
                 'message' => 'Berhasil menampilkan reservasi untuk user ini',
