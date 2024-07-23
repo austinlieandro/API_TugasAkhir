@@ -53,6 +53,39 @@ class JamOperasionalController extends Controller
         ], 409);
     }
 
+    public function inputJamSatu(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'jam_operasional' => 'required',
+            'hari_operasional' => 'required',
+            'slot' => 'required|integer',
+            'bengkels_id' => 'required|exists:bengkels,id',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json($validator->errors(), 422);
+        }
+
+        $jamOperasional = JamOperasional::create([
+            'jam_operasional' => $request->jam_operasional,
+            'hari_operasional' => $request->hari_operasional,
+            'slot' => (int)$request->slot,
+            'bengkels_id' => $request->bengkels_id
+        ]);
+
+        if ($jamOperasional) {
+            return response()->json([
+                'status' => true,
+                'message' => 'Berhasil menambah jam operasional',
+                'jamOperasional' => $jamOperasional
+            ]);
+        }
+        return response()->json([
+            'status' => false,
+            'message' => 'Gagal menambah jam operasional',
+        ], 409);
+    }
+
     public function updateJamOperasional(Request $request, $bengkelId, $id)
     {
         $validator = Validator::make($request->all(), [

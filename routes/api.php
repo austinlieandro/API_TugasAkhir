@@ -32,6 +32,7 @@ Route::post('/inputJenisLayanan', [JenisLayananController::class, 'inputJenisLay
 Route::post('/updateJenisLayanan/{bengkelId}/{id}', [JenisLayananController::class, 'editJenisLayanan']);
 Route::post('/inputMerekKendaraan', [MerekKendaraanController::class, 'inputMerekKendaraan']);
 Route::post('/updateMerekKendaraan/{usersId}/{merek_kendaraan_id}', [MerekKendaraanController::class, 'updateMerekKendaraan']);
+Route::post('/inputJamOperasional', [JamOperasionalController::class, 'inputJamSatu']);
 
 Route::get('/bengkel', [BengkelController::class, 'showAllbengkels']);
 Route::get('/bengkel/{usersId}/{bengkelsId}', [BengkelController::class, 'detailBengkels']);
