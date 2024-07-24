@@ -4,9 +4,11 @@ use App\Http\Controllers\BengkelController;
 use App\Http\Controllers\FavoritController;
 use App\Http\Controllers\JamOperasionalController;
 use App\Http\Controllers\JenisLayananController;
+use App\Http\Controllers\JenisServiceController;
 use App\Http\Controllers\KaryawanController;
 use App\Http\Controllers\KendaraanController;
 use App\Http\Controllers\MerekKendaraanController;
+use App\Http\Controllers\PrioritasController;
 use App\Http\Controllers\ReservasiController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -33,6 +35,9 @@ Route::post('/updateJenisLayanan/{bengkelId}/{id}', [JenisLayananController::cla
 Route::post('/inputMerekKendaraan', [MerekKendaraanController::class, 'inputMerekKendaraan']);
 Route::post('/updateMerekKendaraan/{usersId}/{merek_kendaraan_id}', [MerekKendaraanController::class, 'updateMerekKendaraan']);
 Route::post('/inputJamOperasional', [JamOperasionalController::class, 'inputJamSatu']);
+Route::post('/inputPrioritas', [PrioritasController::class, 'inputPrioritas']);
+Route::post('/inputJenisService', [JenisServiceController::class, 'inputJenisService']);
+Route::post('/updateJenisService/{usersId}/{serviceId}', [JenisServiceController::class, 'updateJenisService']);
 
 Route::get('/bengkel', [BengkelController::class, 'showAllbengkels']);
 Route::get('/bengkel/{usersId}/{bengkelsId}', [BengkelController::class, 'detailBengkels']);
@@ -47,3 +52,4 @@ Route::get('/detailKendaraan/{usersId}/{kendaraan_id}', [KendaraanController::cl
 Route::get('/jenisLayanan/{bengkelId}', [JenisLayananController::class, 'displayJenisLayanan']);
 Route::get('/detailJenisLayanan/{id}', [JenisLayananController::class, 'detailJenisLayanan']);
 Route::get('/displayMerekKendaraan', [MerekKendaraanController::class, 'displayMerekKendaraan']);
+Route::get('/displayJenisService', [JenisServiceController::class, 'displayJenisService']);
