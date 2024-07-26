@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\JamOperasional;
 use App\Models\JenisLayanan;
 use App\Models\Prioritas;
+use App\Models\PrioritasHarga;
 use App\Models\Reservasi;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -216,14 +217,17 @@ class ReservasiController extends Controller
         $max_bobot_harga = 0;
         foreach ($jenisLayananData as $jenis_kerusakan) {
             $repairData = $this->getRepairData($bengkel_id, $jenis_kendaraan, strtolower($jenis_kerusakan));
+
             if ($repairData) {
-                Log::info("Ditemukan repair data: ", ['bobot_nilai' => $repairData->bobot_nilai, 'bobot_estimasi' => $repairData->bobot_estimasi, 'bobot_harga' => $repairData->bobot_harga]);
-                $max_bobot = max(
-                    $max_bobot,
-                    $repairData->bobot_nilai
-                );
+                Log::info("Ditemukan repair data: ", ['bobot_estimasi' => $repairData->bobot_estimasi, 'bobot_urgensi' => $repairData->bobot_urgensi]);
+
+                // Fetch the bobot_nilai from the prioritas_harga table based on the harga from jenis_layanan
+                $bobotHarga = $this->getBobotHarga($jenisLayanan->harga_layanan, $bengkel_id);
+
+                Log::info("Bobot harga yang ditemukan: $bobotHarga");
+                $max_bobot = max($max_bobot, $repairData->bobot_nilai);
                 $max_estimasi_waktu = max($max_estimasi_waktu, $repairData->bobot_estimasi);
-                $max_bobot_harga = max($max_bobot_harga, $repairData->bobot_harga);
+                $max_bobot_harga = max($max_bobot_harga, $bobotHarga);
             } else {
                 Log::warning("Repair data tidak ditemukan untuk jenis_kerusakan: $jenis_kerusakan");
             }
@@ -233,7 +237,9 @@ class ReservasiController extends Controller
 
         Log::info("Nilai maksimum - bobot: $max_bobot, estimasi_waktu: $max_estimasi_waktu, bobot_harga: $max_bobot_harga, faktor_urgensi: $faktorUrgensi");
 
-        if ($max_estimasi_waktu == 0 || $max_bobot_harga == 0) {
+        if (
+            $max_estimasi_waktu == 0 || $max_bobot_harga == 0
+        ) {
             Log::warning("Estimasi waktu atau bobot harga adalah 0, menghindari pembagian dengan nol.");
             return 0;
         }
@@ -242,6 +248,8 @@ class ReservasiController extends Controller
         Log::info("Prioritas dihitung: $prioritas");
         return $prioritas;
     }
+
+
 
     private function getRepairData($bengkel_id, $jenis_kendaraan, $jenis_kerusakan)
     {
@@ -261,7 +269,10 @@ class ReservasiController extends Controller
             return 0;
         }
 
-        $jenisLayananData = is_array($jenisLayanan->jenis_layanan) ? $jenisLayanan->jenis_layanan : json_decode($jenisLayanan->jenis_layanan, true);
+        $jenisLayananData = is_array($jenisLayanan->jenis_layanan) ? $jenisLayanan->jenis_layanan : json_decode(
+            $jenisLayanan->jenis_layanan,
+            true
+        );
 
         $max_faktor_urgensi = 0;
         foreach ($jenisLayananData as $jenis_kerusakan) {
@@ -274,6 +285,35 @@ class ReservasiController extends Controller
         return $max_faktor_urgensi;
     }
 
+    private function getBobotHarga($hargaLayanan, $bengkel_id)
+    {
+        Log::info("Mencari bobot harga untuk harga layanan: $hargaLayanan");
+
+        // Fetch all price ranges from the database
+        $prioritasHargas = PrioritasHarga::where('bengkels_id', $bengkel_id)->orderBy('harga')->get();
+
+        if ($prioritasHargas->isEmpty()) {
+            Log::warning("Tidak ada data prioritas_harga ditemukan untuk bengkel_id: $bengkel_id");
+            return 0;
+        }
+
+        $bobot_nilai = 0;
+
+        foreach ($prioritasHargas as $prioritasHarga) {
+            if ($hargaLayanan <= $prioritasHarga->harga) {
+                $bobot_nilai = $prioritasHarga->bobot_nilai;
+                break;
+            }
+        }
+
+        // If the hargaLayanan exceeds the highest price, use the highest bobot_nilai
+        if ($bobot_nilai == 0) {
+            $bobot_nilai = $prioritasHargas->last()->bobot_nilai;
+        }
+
+        Log::info("Bobot harga ditemukan: ", ['bobot_nilai' => $bobot_nilai]);
+        return $bobot_nilai;
+    }
 
     public function userReservasi(Request $request)
     {

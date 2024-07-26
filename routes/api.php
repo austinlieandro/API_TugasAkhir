@@ -9,6 +9,7 @@ use App\Http\Controllers\KaryawanController;
 use App\Http\Controllers\KendaraanController;
 use App\Http\Controllers\MerekKendaraanController;
 use App\Http\Controllers\PrioritasController;
+use App\Http\Controllers\PrioritasHargaController;
 use App\Http\Controllers\ReservasiController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -38,6 +39,10 @@ Route::post('/inputJamOperasional', [JamOperasionalController::class, 'inputJamS
 Route::post('/inputPrioritas', [PrioritasController::class, 'inputPrioritas']);
 Route::post('/inputJenisService', [JenisServiceController::class, 'inputJenisService']);
 Route::post('/updateJenisService/{usersId}/{serviceId}', [JenisServiceController::class, 'updateJenisService']);
+Route::post('/editPrioritas/{bengkelsId}/{id}', [PrioritasController::class, 'editPrioritas']);
+Route::post('/editPrioritasHarga/{bengkelsId}/{id}', [PrioritasHargaController::class, 'editPrioritasHarga']);
+Route::post('/inputPrioritasSatu', [PrioritasController::class, 'inputPrioritasSatu']);
+Route::post('/inputPrioritasHarga', [PrioritasHargaController::class, 'inputPrioritasHarga']);
 
 Route::get('/bengkel', [BengkelController::class, 'showAllbengkels']);
 Route::get('/bengkel/{usersId}/{bengkelsId}', [BengkelController::class, 'detailBengkels']);
@@ -53,3 +58,5 @@ Route::get('/jenisLayanan/{bengkelId}', [JenisLayananController::class, 'display
 Route::get('/detailJenisLayanan/{id}', [JenisLayananController::class, 'detailJenisLayanan']);
 Route::get('/displayMerekKendaraan', [MerekKendaraanController::class, 'displayMerekKendaraan']);
 Route::get('/displayJenisService', [JenisServiceController::class, 'displayJenisService']);
+Route::get('/displayPrioritas/{bengkelsId}', [PrioritasController::class, 'displayPrioritas']);
+Route::get('/displayPrioritasHarga/{bengkelsId}', [PrioritasHargaController::class, 'displayPrioritasHarga']);

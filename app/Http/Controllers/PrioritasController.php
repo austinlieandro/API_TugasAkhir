@@ -16,7 +16,6 @@ class PrioritasController extends Controller
             'bobot_nilai' => 'required|array',
             'bobot_estimasi' => 'required|array',
             'bobot_urgensi' => 'required|array',
-            'bobot_harga' => 'required|array',
             'bengkels_id' => 'required',
         ]);
 
@@ -29,7 +28,6 @@ class PrioritasController extends Controller
         $bobot_nilai = $request->bobot_nilai;
         $bobot_estimasi = $request->bobot_estimasi;
         $bobot_urgensi = $request->bobot_urgensi;
-        $bobot_harga = $request->bobot_harga;
         $bengkels_id = (int)$request->bengkels_id;
 
         $prioritasData = [];
@@ -40,7 +38,6 @@ class PrioritasController extends Controller
                 'bobot_nilai' => $bobot_nilai[$index],
                 'bobot_estimasi' => $bobot_estimasi[$index],
                 'bobot_urgensi' => $bobot_urgensi[$index],
-                'bobot_harga' => $bobot_harga[$index],
                 'bengkels_id' => $bengkels_id,
             ];
         }
@@ -58,6 +55,100 @@ class PrioritasController extends Controller
         return response()->json([
             'status' => false,
             'message' => 'Gagal menambahkan prioritas',
+        ], 409);
+    }
+
+    public function displayPrioritas($bengkels_id)
+    {
+        $prioritas = Prioritas::where('bengkels_id', $bengkels_id)
+            ->orderBy('jenis_kendaraan', 'desc')
+            ->orderBy('jenis_kerusakan', 'asc')
+            ->get();
+
+        if (!$prioritas) {
+            return response()->json([
+                'status' => false,
+                'message' => 'jenis layanan tidak ditemukan',
+            ], 404);
+        }
+
+        return response()->json([
+            'status' => true,
+            'message' => 'jenis layanan ditemukan',
+            'prioritas' => $prioritas,
+        ], 200);
+    }
+
+    public function editPrioritas(request $request, $bengkels_id, $id)
+    {
+        $validator = Validator::make($request->all(), [
+            'bobot_nilai' => 'required',
+            'bobot_estimasi' => 'required',
+            'bobot_urgensi' => 'required',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json($validator->errors(), 422);
+        }
+
+        $prioritas = Prioritas::where('id', $id)
+            ->where('bengkels_id', $bengkels_id)
+            ->first();
+
+        if (!$prioritas) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Prioritas tidak ditemukan',
+            ], 404);
+        }
+
+        $prioritas->update([
+            'bobot_nilai' => (int)$request->bobot_nilai,
+            'bobot_estimasi' => (int)$request->bobot_estimasi,
+            'bobot_urgensi' => (int)$request->bobot_urgensi,
+        ]);
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Berhasil memperbarui prioritas',
+            'prioritas' => $prioritas,
+        ], 200);
+    }
+
+    public function inputPrioritasSatu(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'jenis_kendaraan' => 'required',
+            'jenis_kerusakan' => 'required',
+            'bobot_nilai' => 'required',
+            'bobot_estimasi' => 'required',
+            'bobot_urgensi' => 'required',
+            'bengkels_id' => 'required',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json($validator->errors(), 422);
+        }
+
+        $prioritas = Prioritas::create([
+            'jenis_kendaraan' => $request->jenis_kendaraan,
+            'jenis_kerusakan' => $request->jenis_kerusakan,
+            'bobot_nilai' => (int)$request->bobot_nilai,
+            'bobot_estimasi' => (int)$request->bobot_estimasi,
+            'bobot_urgensi' => (int)$request->bobot_urgensi,
+            'bengkels_id' => (int)$request->bengkels_id,
+        ]);
+
+        if ($prioritas) {
+            return response()->json([
+                'status' => true,
+                'message' => 'Berhasil menambah prioritas',
+                'prioritas' => $prioritas
+            ]);
+        }
+        return response()->json([
+            'status' => false,
+            'message' => 'Gagal menambah prioritas',
         ], 409);
     }
 }
