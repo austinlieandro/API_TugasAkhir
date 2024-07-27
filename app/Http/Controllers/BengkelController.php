@@ -106,7 +106,22 @@ class BengkelController extends Controller
         $bengkel->jenis_kendaraan = is_string($bengkel->jenis_kendaraan) ? json_decode($bengkel->jenis_kendaraan) : $bengkel->jenis_kendaraan;
         $bengkel->hari_operasional = is_string($bengkel->hari_operasional) ? json_decode($bengkel->hari_operasional) : $bengkel->hari_operasional;
 
-        $jamOperasional = JamOperasional::where('bengkels_id', $bengkels_id)->get();
+        $dayOrder = [
+            'Senin' => 1,
+            'Selasa' => 2,
+            'Rabu' => 3,
+            'Kamis' => 4,
+            'Jumat' => 5,
+            'Sabtu' => 6,
+            'Minggu' => 7
+        ];
+
+        $jamOperasional = JamOperasional::where('bengkels_id', $bengkels_id)
+            ->get()
+            ->sortBy(function ($jam) use ($dayOrder) {
+                $dayIndex = $dayOrder[ucfirst(strtolower($jam->hari_operasional))] ?? 8;
+                return [$dayIndex];
+            });
 
         $jenisLayanan = JenisLayanan::where('bengkels_id', $bengkels_id)->get();
 
@@ -116,6 +131,8 @@ class BengkelController extends Controller
             ->first();
 
         $statusFavorit = $favorit ? $favorit->status_favorit : '0';
+
+        $jamOperasional = $jamOperasional->values()->all();
 
         return response()->json([
             'status' => true,

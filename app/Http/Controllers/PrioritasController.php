@@ -130,6 +130,17 @@ class PrioritasController extends Controller
             return response()->json($validator->errors(), 422);
         }
 
+        $existingPrioritas = Prioritas::where('jenis_kendaraan', $request->jenis_kendaraan)
+            ->where('jenis_kerusakan', $request->jenis_kerusakan)
+            ->exists();
+
+        if ($existingPrioritas) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Prioritas jenis kendaraan dan jenis kerusakan sudah ada',
+            ], 409);
+        }
+
         $prioritas = Prioritas::create([
             'jenis_kendaraan' => $request->jenis_kendaraan,
             'jenis_kerusakan' => $request->jenis_kerusakan,

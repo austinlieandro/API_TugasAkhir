@@ -70,7 +70,7 @@ class JamOperasionalController extends Controller
             'jam_operasional' => $request->jam_operasional,
             'hari_operasional' => $request->hari_operasional,
             'slot' => (int)$request->slot,
-            'bengkels_id' => $request->bengkels_id
+            'bengkels_id' => (int)$request->bengkels_id
         ]);
 
         if ($jamOperasional) {
