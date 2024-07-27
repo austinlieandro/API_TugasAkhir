@@ -220,8 +220,6 @@ class ReservasiController extends Controller
 
             if ($repairData) {
                 Log::info("Ditemukan repair data: ", ['bobot_estimasi' => $repairData->bobot_estimasi, 'bobot_urgensi' => $repairData->bobot_urgensi]);
-
-                // Fetch the bobot_nilai from the prioritas_harga table based on the harga from jenis_layanan
                 $bobotHarga = $this->getBobotHarga($jenisLayanan->harga_layanan, $bengkel_id);
 
                 Log::info("Bobot harga yang ditemukan: $bobotHarga");
@@ -289,7 +287,6 @@ class ReservasiController extends Controller
     {
         Log::info("Mencari bobot harga untuk harga layanan: $hargaLayanan");
 
-        // Fetch all price ranges from the database
         $prioritasHargas = PrioritasHarga::where('bengkels_id', $bengkel_id)->orderBy('harga')->get();
 
         if ($prioritasHargas->isEmpty()) {
@@ -306,7 +303,6 @@ class ReservasiController extends Controller
             }
         }
 
-        // If the hargaLayanan exceeds the highest price, use the highest bobot_nilai
         if ($bobot_nilai == 0) {
             $bobot_nilai = $prioritasHargas->last()->bobot_nilai;
         }

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Bengkels;
 use App\Models\JamOperasional;
 use App\Models\JenisLayanan;
+use App\Models\Reservasi;
 use App\Models\Users;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -79,7 +80,7 @@ class BengkelController extends Controller
         ], 209);
     }
 
-    public function detailBengkels($users_id, $bengkels_id)
+    public function detailBengkels($users_id, $bengkels_id, Request $request)
     {
         $validator = Validator::make(
             ['users_id' => $users_id, 'bengkels_id' => $bengkels_id],
@@ -134,6 +135,39 @@ class BengkelController extends Controller
 
         $jamOperasional = $jamOperasional->values()->all();
 
+        $tanggal_reservasi = $request->input('tanggal_reservasi');
+        $jam_reservasi = $request->input('jam_reservasi');
+
+        if ($tanggal_reservasi && $jam_reservasi) {
+            $englishDayOfWeek = date('l', strtotime($tanggal_reservasi));
+
+            $daysInIndonesian = [
+                'Sunday' => 'Minggu',
+                'Monday' => 'Senin',
+                'Tuesday' => 'Selasa',
+                'Wednesday' => 'Rabu',
+                'Thursday' => 'Kamis',
+                'Friday' => 'Jumat',
+                'Saturday' => 'Sabtu',
+            ];
+
+            $dayOfWeek = $daysInIndonesian[$englishDayOfWeek];
+
+            $reservasiCount = Reservasi::where('tanggal_reservasi', $tanggal_reservasi)
+                ->where('jam_reservasi', $jam_reservasi)
+                ->where('bengkels_id', $bengkels_id)
+                ->count();
+
+            $jamOperasionalSelected = JamOperasional::where('bengkels_id', $bengkels_id)
+                ->where('hari_operasional', $dayOfWeek)
+                ->where('jam_operasional', $jam_reservasi)
+                ->first();
+
+            $sisaSlot = $jamOperasionalSelected ? $jamOperasionalSelected->slot - $reservasiCount : null;
+        } else {
+            $sisaSlot = null;
+        }
+
         return response()->json([
             'status' => true,
             'message' => 'Bengkel ditemukan',
@@ -141,8 +175,10 @@ class BengkelController extends Controller
             'jam_operasional' => $jamOperasional,
             'jenis_layanan' => $jenisLayanan,
             'status_favorit' => $statusFavorit,
+            'sisa_slot' => $sisaSlot,
         ], 201);
     }
+
 
     public function editBengkel(Request $request, $users_id, $id)
     {
