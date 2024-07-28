@@ -43,6 +43,7 @@ Route::post('/editPrioritas/{bengkelsId}/{id}', [PrioritasController::class, 'ed
 Route::post('/editPrioritasHarga/{bengkelsId}/{id}', [PrioritasHargaController::class, 'editPrioritasHarga']);
 Route::post('/inputPrioritasSatu', [PrioritasController::class, 'inputPrioritasSatu']);
 Route::post('/inputPrioritasHarga', [PrioritasHargaController::class, 'inputPrioritasHarga']);
+Route::post('/updateReservasi', [ReservasiController::class, 'updateReservasi']);
 
 Route::get('/bengkel', [BengkelController::class, 'showAllbengkels']);
 Route::get('/bengkel/{usersId}/{bengkelsId}', [BengkelController::class, 'detailBengkels']);
