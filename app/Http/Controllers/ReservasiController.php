@@ -16,13 +16,10 @@ class ReservasiController extends Controller
 {
     private function hitungPrioritas($bengkel_id, $jenis_kendaraan, $jeniskendala_reservasi)
     {
-        Log::info("Memulai perhitungan prioritas untuk bengkel_id: $bengkel_id, jenis_kendaraan: $jenis_kendaraan, jeniskendala_reservasi: $jeniskendala_reservasi");
-
         $jenis_kendaraan = strtolower($jenis_kendaraan);
         $jenisLayanan = JenisLayanan::where('nama_layanan', $jeniskendala_reservasi)->first();
 
         if (!$jenisLayanan) {
-            Log::warning("Jenis layanan tidak ditemukan: $jeniskendala_reservasi");
             return 0;
         }
 
@@ -35,10 +32,8 @@ class ReservasiController extends Controller
             $repairData = $this->getRepairData($bengkel_id, $jenis_kendaraan, strtolower($jenis_kerusakan));
 
             if ($repairData) {
-                Log::info("Ditemukan repair data: ", ['bobot_estimasi' => $repairData->bobot_estimasi, 'bobot_urgensi' => $repairData->bobot_urgensi]);
                 $bobotHarga = $this->getBobotHarga($jenisLayanan->harga_layanan, $bengkel_id);
 
-                Log::info("Bobot harga yang ditemukan: $bobotHarga");
                 $max_bobot = max($max_bobot, $repairData->bobot_nilai);
                 $max_estimasi_waktu = max($max_estimasi_waktu, $repairData->bobot_estimasi);
                 $max_bobot_harga = max($max_bobot_harga, $bobotHarga);
@@ -49,17 +44,13 @@ class ReservasiController extends Controller
 
         $faktorUrgensi = $this->hitungFaktorUrgensi($bengkel_id, $jenis_kendaraan, $jeniskendala_reservasi);
 
-        Log::info("Nilai maksimum - bobot: $max_bobot, estimasi_waktu: $max_estimasi_waktu, bobot_harga: $max_bobot_harga, faktor_urgensi: $faktorUrgensi");
-
         if (
             $max_estimasi_waktu == 0 || $max_bobot_harga == 0
         ) {
-            Log::warning("Estimasi waktu atau bobot harga adalah 0, menghindari pembagian dengan nol.");
             return 0;
         }
 
         $prioritas = ($max_bobot * $faktorUrgensi) / ($max_bobot_harga * $max_estimasi_waktu);
-        Log::info("Prioritas dihitung: $prioritas");
         return $prioritas;
     }
 
@@ -67,7 +58,6 @@ class ReservasiController extends Controller
 
     private function getRepairData($bengkel_id, $jenis_kendaraan, $jenis_kerusakan)
     {
-        Log::info("Mencari repair data untuk bengkel_id: $bengkel_id, jenis_kendaraan: $jenis_kendaraan, jenis_kerusakan: $jenis_kerusakan");
         return Prioritas::where('bengkels_id', $bengkel_id)
             ->where('jenis_kendaraan', $jenis_kendaraan)
             ->where('jenis_kerusakan', $jenis_kerusakan)
@@ -101,12 +91,10 @@ class ReservasiController extends Controller
 
     private function getBobotHarga($hargaLayanan, $bengkel_id)
     {
-        Log::info("Mencari bobot harga untuk harga layanan: $hargaLayanan");
 
         $prioritasHargas = PrioritasHarga::where('bengkels_id', $bengkel_id)->orderBy('harga')->get();
 
         if ($prioritasHargas->isEmpty()) {
-            Log::warning("Tidak ada data prioritas_harga ditemukan untuk bengkel_id: $bengkel_id");
             return 0;
         }
 
@@ -123,7 +111,6 @@ class ReservasiController extends Controller
             $bobot_nilai = $prioritasHargas->last()->bobot_nilai;
         }
 
-        Log::info("Bobot harga ditemukan: ", ['bobot_nilai' => $bobot_nilai]);
         return $bobot_nilai;
     }
 
@@ -190,7 +177,6 @@ class ReservasiController extends Controller
             ->first();
 
         $sisaSlot = $jamOperasionalSelected ? $jamOperasionalSelected->slot - $reservasiCount : null;
-        Log::info("SISA SLOT: $sisaSlot");
         if ($jamOperasional && $sisaSlot <= 1) {
             $createdAtNow = now();
             $prioritas = $this->hitungPrioritas($request->bengkels_id, $request->kendaraan_reservasi, $request->jeniskendala_reservasi);
@@ -206,7 +192,6 @@ class ReservasiController extends Controller
                 $prioritasTertinggi = $reservasiSama->first()->prioritas;
                 if ($prioritas > $prioritasTertinggi) {
                     foreach ($reservasiSama as $reservasi) {
-                        // $jamOperasional->slot += 1;
                         $reservasi->status_reservasi = 'dibatalkan';
                         $reservasi->save();
                     }
